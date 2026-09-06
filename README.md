@@ -1,3 +1,266 @@
+# Prerequisites
+
+Before starting the project, install and configure the following tools.
+
+## 1. Visual Studio Code
+
+Install Visual Studio Code.
+
+We will use VS Code to:
+
+- Write the FastAPI application
+- Create Dockerfiles and configuration files
+- Create GitHub Actions workflows
+- Run commands through the integrated terminal
+
+Open the project in VS Code and use:
+
+```text
+Terminal → New Terminal
+```
+
+---
+
+## 2. Git
+
+Install Git for Windows.
+
+Verify the installation:
+
+```powershell
+git --version
+```
+
+Configure your Git identity:
+
+```powershell
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+```
+
+Verify the configuration:
+
+```powershell
+git config --global --list
+```
+
+Git will be used to version-control the project and push it to GitHub.
+
+---
+
+## 3. Python
+
+Install Python 3.12.
+
+Verify:
+
+```powershell
+python --version
+```
+
+Also verify pip:
+
+```powershell
+pip --version
+```
+
+If `python` is not recognized, try:
+
+```powershell
+py --version
+```
+
+Python is required locally for:
+
+- Creating virtual environments
+- Installing dependencies
+- Running FastAPI locally
+- Running pytest
+- Running Flake8
+
+Docker will later provide its own Python environment inside the container.
+
+---
+
+## 4. pip
+
+`pip` is Python's package manager.
+
+We will use it to install packages such as:
+
+```text
+fastapi
+uvicorn
+pytest
+httpx
+flake8
+```
+
+Verify:
+
+```powershell
+pip --version
+```
+
+If `pip` is not recognized, use:
+
+```powershell
+python -m pip --version
+```
+
+---
+
+## 5. Docker Desktop
+
+Install Docker Desktop for Windows.
+
+After installation, start Docker Desktop and wait until the Docker Engine is running.
+
+Verify:
+
+```powershell
+docker --version
+```
+
+Then:
+
+```powershell
+docker info
+```
+
+`docker info` should return information about the Docker Engine.
+
+### Important
+
+Docker Desktop must be running whenever we use commands such as:
+
+```powershell
+docker build
+docker run
+docker ps
+```
+
+---
+
+## 6. Configure Docker Desktop
+
+For Windows, Docker Desktop commonly uses the WSL 2 backend.
+
+Open:
+
+```text
+Docker Desktop
+→ Settings
+→ General
+```
+
+Make sure the WSL 2 based engine option is enabled if available.
+
+If you use WSL, check:
+
+```text
+Docker Desktop
+→ Settings
+→ Resources
+→ WSL Integration
+```
+
+and enable integration with your WSL distribution.
+
+### Important
+
+You do not need to manually use WSL for this project. The project can be completed using the VS Code PowerShell terminal and Docker Desktop.
+
+---
+
+## 7. Test Docker
+
+Run:
+
+```powershell
+docker run hello-world
+```
+
+If Docker is configured correctly, Docker will download the `hello-world` image and run a test container.
+
+This confirms that:
+
+```text
+Docker CLI
+    ↓
+Docker Engine
+    ↓
+Docker Container
+```
+
+is working correctly.
+
+---
+
+## 8. GitHub Account
+
+Create or sign in to a GitHub account.
+
+We will eventually:
+
+- Create a GitHub repository
+- Push the project using Git
+- Configure GitHub Actions
+- Run automated CI workflows
+
+The repository used for this project is:
+
+```text
+containerized-fastapi-cicd
+```
+
+---
+
+## 9. Final Environment Check
+
+Before starting Phase 1, run:
+
+```powershell
+git --version
+python --version
+pip --version
+docker --version
+docker info
+```
+
+Finally:
+
+```powershell
+docker run hello-world
+```
+
+If these commands work successfully, the development environment is ready.
+
+---
+
+# Project Roadmap
+
+We will build the project incrementally.
+
+```text
+Prerequisites
+      ↓
+Phase 1
+Basic FastAPI + Docker
+      ↓
+Phase 2
+Testing + Flake8 + Multi-stage Docker + GitHub Actions
+      ↓
+Phase 3
+Alpine + Non-root User + HEALTHCHECK + CI
+```
+
+The objective is not simply to make the application work.
+
+With every phase, we will understand **what we are changing, why we are changing it, and what interview concept that change demonstrates**.
+
+---
+
 # Phase 1 — Basic Dockerization
 
 Phase 1 is where we start the project **from scratch**.
