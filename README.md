@@ -1,52 +1,127 @@
-# Prerequisites
+# Containerized FastAPI CI/CD — Docker → GitHub Actions → Docker Hub → AWS EC2
 
-Before starting the project, install and configure the following tools.
+A hands-on DevOps project that starts with a simple FastAPI application and progressively evolves into a containerized, tested, linted, CI/CD-enabled application deployed to AWS EC2.
 
-## 1. Visual Studio Code
+The project is intentionally built phase by phase so that every change has a practical reason and an interview-relevant concept behind it.
 
-Install Visual Studio Code.
+---
 
-We will use VS Code to:
-
-- Write the FastAPI application
-- Create Dockerfiles and configuration files
-- Create GitHub Actions workflows
-- Run commands through the integrated terminal
-
-Open the project in VS Code and use:
+# Project Roadmap
 
 ```text
-Terminal → New Terminal
+Prerequisites
+      ↓
+Phase 1
+Basic FastAPI + Docker
+      ↓
+Phase 2
+Testing + Flake8 + Multi-stage Docker + GitHub Actions CI
+      ↓
+Phase 3
+Alpine + Non-root User + HEALTHCHECK + CI
+      ↓
+Phase 4
+GitHub Actions → Docker Hub
+      ↓
+Phase 5
+Docker Hub → AWS EC2
+      ↓
+Phase 6
+AWS ECR + ECS
+      ↓
+Phase 7
+Kubernetes
+      ↓
+Phase 8
+Terraform
+```
+
+## Final architecture so far
+
+```text
+Developer
+    |
+    | git push
+    v
+GitHub
+    |
+    v
+GitHub Actions
+    |
+    +--> Flake8
+    +--> pytest
+    +--> Docker Build
+    |
+    v
+Docker Hub
+    |
+    | docker pull
+    v
+AWS EC2
+    |
+    v
+Docker Container
+    |
+    v
+FastAPI
+    |
+    v
+Internet
 ```
 
 ---
 
+# Prerequisites
+
+Before starting the project, install and configure:
+
+- Visual Studio Code
+- Git
+- Python 3.12
+- pip
+- Docker Desktop
+- GitHub account
+- Docker Hub account
+- AWS account for Phase 5 onward
+
+## 1. Visual Studio Code
+
+Install VS Code.
+
+We use it to:
+
+- Write the FastAPI application
+- Create Dockerfiles
+- Create GitHub Actions workflows
+- Run PowerShell commands
+- Inspect the project
+
+Open:
+
+```text
+VS Code → Terminal → New Terminal
+```
+
 ## 2. Git
 
-Install Git for Windows.
-
-Verify the installation:
+Verify:
 
 ```powershell
 git --version
 ```
 
-Configure your Git identity:
+Configure Git:
 
 ```powershell
 git config --global user.name "Your Name"
 git config --global user.email "your-email@example.com"
 ```
 
-Verify the configuration:
+Verify:
 
 ```powershell
 git config --global --list
 ```
-
-Git will be used to version-control the project and push it to GitHub.
-
----
 
 ## 3. Python
 
@@ -56,97 +131,37 @@ Verify:
 
 ```powershell
 python --version
-```
-
-Also verify pip:
-
-```powershell
 pip --version
 ```
 
-If `python` is not recognized, try:
+If `python` is not recognized:
 
 ```powershell
 py --version
 ```
 
-Python is required locally for:
-
-- Creating virtual environments
-- Installing dependencies
-- Running FastAPI locally
-- Running pytest
-- Running Flake8
-
-Docker will later provide its own Python environment inside the container.
-
----
-
-## 4. pip
-
-`pip` is Python's package manager.
-
-We will use it to install packages such as:
-
-```text
-fastapi
-uvicorn
-pytest
-httpx
-flake8
-```
-
-Verify:
-
-```powershell
-pip --version
-```
-
-If `pip` is not recognized, use:
-
-```powershell
-python -m pip --version
-```
-
----
-
-## 5. Docker Desktop
+## 4. Docker Desktop
 
 Install Docker Desktop for Windows.
 
-After installation, start Docker Desktop and wait until the Docker Engine is running.
+Start Docker Desktop and wait until Docker Engine is running.
 
 Verify:
 
 ```powershell
 docker --version
-```
-
-Then:
-
-```powershell
 docker info
 ```
 
-`docker info` should return information about the Docker Engine.
-
-### Important
-
-Docker Desktop must be running whenever we use commands such as:
+Test:
 
 ```powershell
-docker build
-docker run
-docker ps
+docker run hello-world
 ```
-
----
-
-## 6. Configure Docker Desktop
 
 For Windows, Docker Desktop commonly uses the WSL 2 backend.
 
-Open:
+Check:
 
 ```text
 Docker Desktop
@@ -154,59 +169,13 @@ Docker Desktop
 → General
 ```
 
-Make sure the WSL 2 based engine option is enabled if available.
+Enable the WSL 2 based engine if available.
 
-If you use WSL, check:
+You do not need to manually use WSL for this project. The project can be completed from the VS Code PowerShell terminal with Docker Desktop.
 
-```text
-Docker Desktop
-→ Settings
-→ Resources
-→ WSL Integration
-```
+## 5. GitHub
 
-and enable integration with your WSL distribution.
-
-### Important
-
-You do not need to manually use WSL for this project. The project can be completed using the VS Code PowerShell terminal and Docker Desktop.
-
----
-
-## 7. Test Docker
-
-Run:
-
-```powershell
-docker run hello-world
-```
-
-If Docker is configured correctly, Docker will download the `hello-world` image and run a test container.
-
-This confirms that:
-
-```text
-Docker CLI
-    ↓
-Docker Engine
-    ↓
-Docker Container
-```
-
-is working correctly.
-
----
-
-## 8. GitHub Account
-
-Create or sign in to a GitHub account.
-
-We will eventually:
-
-- Create a GitHub repository
-- Push the project using Git
-- Configure GitHub Actions
-- Run automated CI workflows
+Create/sign in to GitHub.
 
 The repository used for this project is:
 
@@ -214,11 +183,7 @@ The repository used for this project is:
 containerized-fastapi-cicd
 ```
 
----
-
-## 9. Final Environment Check
-
-Before starting Phase 1, run:
+## 6. Final environment check
 
 ```powershell
 git --version
@@ -226,148 +191,67 @@ python --version
 pip --version
 docker --version
 docker info
-```
-
-Finally:
-
-```powershell
 docker run hello-world
 ```
-
-If these commands work successfully, the development environment is ready.
-
----
-
-# Project Roadmap
-
-We will build the project incrementally.
-
-```text
-Prerequisites
-      ↓
-Phase 1
-Basic FastAPI + Docker
-      ↓
-Phase 2
-Testing + Flake8 + Multi-stage Docker + GitHub Actions
-      ↓
-Phase 3
-Alpine + Non-root User + HEALTHCHECK + CI
-```
-
-The objective is not simply to make the application work.
-
-With every phase, we will understand **what we are changing, why we are changing it, and what interview concept that change demonstrates**.
 
 ---
 
 # Phase 1 — Basic Dockerization
 
-Phase 1 is where we start the project **from scratch**.
+## Goal
 
-The goal is not just to make the FastAPI application run. We want to understand the complete basic Docker workflow:
+Build a basic FastAPI application and run it inside Docker.
 
 ```text
-FastAPI Application
-        ↓
-Python Dependencies
-        ↓
+FastAPI
+   ↓
+Python dependencies
+   ↓
 Dockerfile
-        ↓
-Docker Image
-        ↓
-Docker Container
-        ↓
-Application accessible through localhost
+   ↓
+Docker image
+   ↓
+Docker container
+   ↓
+localhost:8000
 ```
 
-At this stage, we intentionally keep things simple. We will use an Ubuntu base image and manually install Python inside it.
-
-Later phases will improve this setup.
+At this stage we intentionally use Ubuntu as the base image and install Python manually.
 
 ---
 
-## What We Are Building
-
-We are creating a small FastAPI application with three endpoints:
-
-```text
-GET /
-GET /health
-GET /info
-```
-
-Then we will package the application into a Docker image and run it as a container.
-
----
-
-## 1. Create the Project Directory
-
-Create the main project directory:
+## 1. Create the project
 
 ```powershell
 mkdir docker-project
 cd docker-project
-```
-
-Open the folder in VS Code:
-
-```powershell
 code .
 ```
 
-### What are we doing?
-
-`docker-project` is the root directory for the entire project.
-
-All phases will live inside this directory:
-
-```text
-docker-project/
-├── phase-1/
-├── phase-2/
-└── phase-3/
-```
-
-Keeping each phase separate lets us compare how the Docker setup evolves.
-
----
-
-## 2. Create the Phase-1 Directory
-
-Inside `docker-project`:
+Create:
 
 ```powershell
 mkdir phase-1
 mkdir phase-1\app
 ```
 
-We are creating:
+Structure:
 
 ```text
-phase-1/
-└── app/
+docker-project/
+└── phase-1/
+    └── app/
 ```
-
-The actual FastAPI application will live inside the `app` directory.
 
 ---
 
-## 3. Create the FastAPI Application
+## 2. Create FastAPI application
 
-Inside:
-
-```text
-phase-1\app
-```
-
-create:
+Create:
 
 ```text
-main.py
+phase-1\app\main.py
 ```
-
-Contents:
 
 ```python
 from fastapi import FastAPI
@@ -394,44 +278,24 @@ def info():
     }
 ```
 
-### What are we doing?
+We have three endpoints:
 
-We are creating a basic FastAPI application.
-
-This line:
-
-```python
-app = FastAPI()
+```text
+GET /
+GET /health
+GET /info
 ```
 
-creates the FastAPI application object.
-
-The decorators:
-
-```python
-@app.get("/")
-@app.get("/health")
-@app.get("/info")
-```
-
-define HTTP GET endpoints.
-
-We will later use the `/health` endpoint for Docker's health check in Phase 3.
+The `/health` endpoint will later be used by Docker's `HEALTHCHECK`.
 
 ---
 
-## 4. Create `requirements.txt`
+## 3. Create requirements.txt
 
-Inside:
-
-```text
-phase-1
-```
-
-create:
+Create:
 
 ```text
-requirements.txt
+phase-1\requirements.txt
 ```
 
 Contents:
@@ -441,154 +305,65 @@ fastapi
 uvicorn[standard]
 ```
 
-### What are we doing?
-
-This file tells Python/pip which packages the application needs.
-
-- `fastapi` → web framework
-- `uvicorn[standard]` → ASGI server used to run the FastAPI application
-
-We keep dependencies in a separate file instead of installing them one by one.
-
 ---
 
-## 5. Create the Python Virtual Environment
-
-Inside `phase-1`:
+## 4. Create virtual environment
 
 ```powershell
 cd phase-1
-```
-
-Create a virtual environment:
-
-```powershell
 python -m venv venv
-```
-
-Activate it:
-
-```powershell
 .\venv\Scripts\Activate.ps1
-```
-
-Install the application dependencies:
-
-```powershell
 pip install -r requirements.txt
 ```
 
-### What are we doing?
+The virtual environment is only for local development.
 
-The virtual environment gives us an isolated Python environment for local development.
-
-Without a virtual environment, installing packages could affect the global Python installation.
-
-Important distinction:
-
-```text
-Local development:
-venv → used on our computer
-
-Docker:
-container → gets its own Python environment
-```
-
-The local `venv` is only for development. We will later exclude it using `.dockerignore`.
+Docker will have its own Python environment.
 
 ---
 
-## 6. Run the FastAPI Application Locally
-
-Inside `phase-1`:
+## 5. Test FastAPI locally
 
 ```powershell
 uvicorn app.main:app --reload
 ```
 
-The application should start on:
-
-```text
-http://127.0.0.1:8000
-```
-
 Open:
 
 ```text
 http://127.0.0.1:8000
-```
-
-Expected response:
-
-```json
-{
-  "message": "Welcome to Docker Mastery Project"
-}
-```
-
-Test:
-
-```text
 http://127.0.0.1:8000/health
-```
-
-Expected:
-
-```json
-{
-  "status": "healthy"
-}
-```
-
-Test:
-
-```text
 http://127.0.0.1:8000/info
-```
-
-You can also open:
-
-```text
 http://127.0.0.1:8000/docs
 ```
 
-This is FastAPI's automatically generated Swagger/OpenAPI documentation.
-
-Stop the development server:
+Stop:
 
 ```text
 CTRL + C
 ```
 
-### Why are we doing this before Docker?
-
-We first verify that the application itself works.
-
-This gives us a useful troubleshooting rule:
+Important troubleshooting rule:
 
 ```text
-If it doesn't work locally → fix the application.
+Doesn't work locally
+    ↓
+Fix application
 
-If it works locally but not in Docker → investigate the Docker setup.
+Works locally but not in Docker
+    ↓
+Investigate Docker configuration
 ```
 
 ---
 
-## 7. Create `.dockerignore`
+## 6. Create .dockerignore
 
-Inside:
-
-```text
-phase-1
-```
-
-create:
+Create:
 
 ```text
-.dockerignore
+phase-1\.dockerignore
 ```
-
-Contents:
 
 ```text
 venv
@@ -597,66 +372,17 @@ __pycache__
 .git
 ```
 
-### What are we doing?
-
-When we run:
-
-```powershell
-docker build .
-```
-
-Docker uses the current directory as the **build context**.
-
-Without `.dockerignore`, unnecessary files could be sent to Docker.
-
-We therefore exclude:
-
-```text
-venv
-```
-
-Our local virtual environment can contain thousands of files and does not belong inside the image.
-
-```text
-__pycache__
-*.pyc
-```
-
-These are Python cache/compiled files and are not needed.
-
-```text
-.git
-```
-
-Git metadata is not required by the application.
-
-### Key concept
-
-```text
-.dockerignore
-      ↓
-controls what is sent as Docker build context
-```
-
-This becomes especially important as projects become larger.
+This prevents unnecessary files from becoming part of the Docker build context.
 
 ---
 
-## 8. Create the Phase-1 Dockerfile
+## 7. Create Dockerfile
 
-Inside:
-
-```text
-phase-1
-```
-
-create:
+Create:
 
 ```text
-Dockerfile
+phase-1\Dockerfile
 ```
-
-Contents:
 
 ```dockerfile
 FROM ubuntu:22.04
@@ -678,531 +404,101 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
----
+### What is happening?
 
-## 9. Understand the Phase-1 Dockerfile
+```text
+FROM
+ ↓
+Choose base image
 
-This is one of the most important parts of Phase 1.
+WORKDIR
+ ↓
+Set /app
 
-We are telling Docker exactly how to construct the environment in which our application will run.
+RUN
+ ↓
+Install Python and dependencies
 
----
+COPY
+ ↓
+Copy application
 
-### Step 1 — Choose a Base Image
+EXPOSE
+ ↓
+Document application port
 
-```dockerfile
-FROM ubuntu:22.04
+CMD
+ ↓
+Start Uvicorn
 ```
 
-We start with a general-purpose Ubuntu Linux image.
-
-At this point, the image does not contain the Python environment our application needs.
-
-So we will install Python manually.
-
-### Why is this important?
-
-This is intentionally a basic approach.
-
-Later, in Phase 2, we will replace this with:
-
-```dockerfile
-FROM python:3.12-slim
-```
-
-That image already provides Python.
-
-So Phase 1 teaches us what is actually happening underneath a higher-level Python base image.
+`EXPOSE 8000` documents the port; it does not publish it.
 
 ---
 
-### Step 2 — Set the Working Directory
+## 8. Build image
 
-```dockerfile
-WORKDIR /app
-```
-
-This creates/sets:
-
-```text
-/app
-```
-
-as the working directory inside the image.
-
-Commands after this point operate relative to `/app`.
-
-Instead of having files scattered around the container, our application will live under:
-
-```text
-/app
-```
-
----
-
-### Step 3 — Install Python and pip
-
-```dockerfile
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    rm -rf /var/lib/apt/lists/*
-```
-
-We are doing three things:
-
-```text
-apt-get update
-      ↓
-refresh Ubuntu package information
-
-apt-get install
-      ↓
-install Python 3 and pip
-
-rm -rf /var/lib/apt/lists/*
-      ↓
-remove unnecessary package-list files
-```
-
-This is necessary because our Ubuntu base image does not provide the Python environment required by the application.
-
----
-
-### Step 4 — Copy Requirements
-
-```dockerfile
-COPY requirements.txt .
-```
-
-This copies the local:
-
-```text
-phase-1/requirements.txt
-```
-
-into:
-
-```text
-/app/requirements.txt
-```
-
-inside the image.
-
----
-
-### Step 5 — Install Dependencies
-
-```dockerfile
-RUN pip3 install --no-cache-dir -r requirements.txt
-```
-
-This installs:
-
-```text
-FastAPI
-Uvicorn
-```
-
-inside the Docker image.
-
-`--no-cache-dir` prevents pip from keeping its package cache, helping reduce unnecessary image contents.
-
----
-
-### Step 6 — Copy the Application
-
-```dockerfile
-COPY app/ ./app/
-```
-
-This copies:
-
-```text
-phase-1/app/
-```
-
-into:
-
-```text
-/app/app/
-```
-
-inside the image.
-
-So the container will contain:
-
-```text
-/app
-└── app
-    └── main.py
-```
-
----
-
-### Step 7 — Document the Port
-
-```dockerfile
-EXPOSE 8000
-```
-
-This documents that the application listens on port `8000`.
-
-Important:
-
-`EXPOSE` does **not** publish the port to the host by itself.
-
-The actual host-to-container mapping will happen later with:
-
-```powershell
--p 8000:8000
-```
-
----
-
-### Step 8 — Define the Container Startup Command
-
-```dockerfile
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-This tells Docker what command should run when the container starts.
-
-We are starting:
-
-```text
-uvicorn
-```
-
-and telling it to load:
-
-```text
-app.main:app
-```
-
-which means:
-
-```text
-app/
-└── main.py
-        └── app = FastAPI()
-```
-
----
-
-### Why `0.0.0.0`?
-
-Inside a container, the application must accept connections through the container's network interface.
-
-Therefore we use:
-
-```text
---host 0.0.0.0
-```
-
-instead of:
-
-```text
---host 127.0.0.1
-```
-
-This is important for accessing the application from the host machine.
-
----
-
-## 10. Build the Docker Image
-
-### Location
-
-Inside:
-
-```text
-phase-1
-```
-
-Run:
+Inside `phase-1`:
 
 ```powershell
 docker build -t docker-mastery:phase1 .
 ```
 
-### What are we doing?
-
-Docker reads the `Dockerfile` and builds an image from it.
-
-Breakdown:
-
-```text
-docker build
-```
-
-Build a Docker image.
-
-```text
--t docker-mastery:phase1
-```
-
-Give the image:
-
-```text
-name = docker-mastery
-tag  = phase1
-```
-
-```text
-.
-```
-
-Use the current directory as the Docker build context.
-
-The process is roughly:
-
-```text
-Dockerfile
-    ↓
-execute instructions
-    ↓
-install Python
-    ↓
-install dependencies
-    ↓
-copy application
-    ↓
-Docker image
-```
-
----
-
-## 11. Check the Docker Image
-
-Run:
+Check:
 
 ```powershell
 docker images
 ```
 
-You should see an image similar to:
-
-```text
-docker-mastery    phase1
-```
-
-### Image vs Container
-
-At this point we only have an **image**.
-
-An image is a template.
-
-We have not started the application inside a container yet.
-
-```text
-Docker Image
-     |
-     | docker run
-     ↓
-Docker Container
-```
-
 ---
 
-## 12. Run the Container
-
-Run:
+## 9. Run container
 
 ```powershell
 docker run -d --name phase1-app -p 8000:8000 docker-mastery:phase1
 ```
 
-### What are we doing?
-
-We are creating a container from the image and starting it.
-
-Breakdown:
-
-```text
--d
-```
-
-Runs the container in detached/background mode.
-
-```text
---name phase1-app
-```
-
-Gives the container a convenient name.
-
-```text
--p 8000:8000
-```
-
-Maps:
-
-```text
-HOST PORT       CONTAINER PORT
-8000      →     8000
-```
-
-So:
-
-```text
-localhost:8000
-```
-
-on our computer reaches:
-
-```text
-port 8000
-```
-
-inside the container.
-
-Finally:
-
-```text
-docker-mastery:phase1
-```
-
-is the image from which the container is created.
-
----
-
-## 13. Check the Running Container
-
-Run:
+Check:
 
 ```powershell
 docker ps
 ```
 
-You should see:
-
-```text
-phase1-app
-```
-
-and a port mapping similar to:
+Expected port mapping:
 
 ```text
 0.0.0.0:8000->8000/tcp
 ```
 
-### What is happening?
-
-The architecture is now:
-
-```text
-Browser
-   |
-   | localhost:8000
-   ↓
-Host machine port 8000
-   |
-   | Docker port mapping
-   ↓
-Container port 8000
-   |
-   ↓
-Uvicorn
-   |
-   ↓
-FastAPI
-```
-
----
-
-## 14. Check Container Logs
-
-Run:
+Check logs:
 
 ```powershell
 docker logs phase1-app
 ```
 
-You should see Uvicorn startup logs.
-
-### Why check logs?
-
-Logs are one of the first places to look when a container starts but the application does not behave as expected.
-
-For example, logs can reveal:
-
-- Python errors
-- Import errors
-- Missing packages
-- Incorrect startup commands
-- Port/configuration problems
-
----
-
-## 15. Test the Dockerized Application
-
-Open:
+Test:
 
 ```text
 http://localhost:8000
-```
-
-Then:
-
-```text
 http://localhost:8000/health
-```
-
-Then:
-
-```text
 http://localhost:8000/info
-```
-
-And:
-
-```text
 http://localhost:8000/docs
 ```
 
-At this point, the FastAPI application is no longer running directly from our local Python environment.
-
-It is running inside the Docker container.
-
 ---
 
-## 16. Enter the Running Container
-
-Run:
+## 10. Inspect container
 
 ```powershell
 docker exec -it phase1-app bash
 ```
 
-### What are we doing?
-
-`docker exec` allows us to execute a command inside an already-running container.
-
-Inside the container:
+Inside:
 
 ```bash
 ls
-```
-
-You should see something similar to:
-
-```text
-app
-requirements.txt
-```
-
-Then:
-
-```bash
 ls app
 ```
-
-You should see:
-
-```text
-main.py
-```
-
-This lets us inspect what actually exists inside the container.
 
 Exit:
 
@@ -1212,504 +508,63 @@ exit
 
 ---
 
-## 17. Stop and Remove the Container
+## Phase 1 interview concepts
 
-When finished testing:
+Know:
 
-```powershell
-docker stop phase1-app
-```
-
-This stops the running container.
-
-Remove it:
-
-```powershell
-docker rm phase1-app
-```
-
-Check running containers:
-
-```powershell
-docker ps
-```
-
-Check all containers, including stopped ones:
-
-```powershell
-docker ps -a
-```
-
-### Important distinction
-
-```text
-docker stop
-```
-
-stops a container.
-
-```text
-docker rm
-```
-
-removes a container.
-
-The image still exists.
-
-Check it:
-
-```powershell
-docker images
-```
-
-The image:
-
-```text
-docker-mastery:phase1
-```
-
-can still be used to create another container.
+- Docker image vs container
+- Dockerfile
+- Docker build context
+- `.dockerignore`
+- `WORKDIR`
+- `COPY`
+- `RUN`
+- `EXPOSE`
+- `CMD`
+- Port mapping
+- Why `0.0.0.0` is used inside a container
+- Why containers improve environment consistency
 
 ---
 
-## Phase-1 Architecture
+# Phase 2 — Testing + Linting + Multi-stage Docker + GitHub Actions
 
-```text
-                  LOCAL MACHINE
-                       |
-                       |
-                 FastAPI Source
-                       |
-                       v
-                  Dockerfile
-                       |
-                       v
-              Docker Build Context
-                       |
-                       v
-                Docker Image
-            docker-mastery:phase1
-                       |
-                 docker run
-                       |
-                       v
-                Docker Container
-                   phase1-app
-                       |
-                       v
-                    Uvicorn
-                       |
-                       v
-                    FastAPI
-                       |
-                       v
-                 Port 8000
-                       |
-                       v
-              http://localhost:8000
-```
+Phase 2 improves the basic setup.
+
+We introduce:
+
+- pytest
+- httpx
+- Flake8
+- `requirements-dev.txt`
+- Python Slim image
+- Multi-stage Docker build
+- Git
+- GitHub
+- GitHub Actions CI
 
 ---
 
-# Phase-1 Interview Notes
+## 1. Create Phase 2
 
-## What did we do?
-
-> We created a FastAPI application and containerized it using Docker. We started with an Ubuntu base image, manually installed Python and pip, installed the application's dependencies, copied the application into the image, and ran it using Uvicorn inside a Docker container.
-
----
-
-## Why Docker?
-
-Docker packages an application together with its runtime environment and dependencies.
-
-Without Docker:
-
-```text
-Developer machine
-    ↓
-Python version
-    ↓
-Installed packages
-    ↓
-Application
-```
-
-Different machines may have different configurations.
-
-With Docker:
-
-```text
-Docker Image
-    ↓
-Application
-    ↓
-Dependencies
-    ↓
-Runtime
-```
-
-The environment becomes much more consistent.
-
----
-
-## What is a Docker Image?
-
-A Docker image is a packaged, immutable template used to create containers.
-
-In our project:
-
-```text
-docker-mastery:phase1
-```
-
-is the image.
-
----
-
-## What is a Container?
-
-A container is a running instance of a Docker image.
-
-```text
-Image
-  |
-  | docker run
-  ↓
-Container
-```
-
-One image can be used to create multiple containers.
-
----
-
-## What is a Dockerfile?
-
-A Dockerfile is a text file containing instructions used by Docker to build an image.
-
-Our Dockerfile describes:
-
-```text
-Base OS
-   ↓
-Python installation
-   ↓
-Dependencies
-   ↓
-Application
-   ↓
-Port
-   ↓
-Startup command
-```
-
----
-
-## What is Docker Build Context?
-
-When we run:
-
-```powershell
-docker build -t docker-mastery:phase1 .
-```
-
-the final:
-
-```text
-.
-```
-
-means the current directory is the build context.
-
-Docker can access files from that context during instructions such as:
-
-```dockerfile
-COPY requirements.txt .
-COPY app/ ./app/
-```
-
-The `.dockerignore` file controls which files are excluded from the context.
-
----
-
-## Why `.dockerignore`?
-
-It prevents unnecessary files from being sent to Docker during the build.
-
-We excluded:
-
-```text
-venv
-__pycache__
-*.pyc
-.git
-```
-
-This makes the build context smaller and prevents development-only files from being included unnecessarily.
-
----
-
-## Why `EXPOSE 8000`?
-
-```dockerfile
-EXPOSE 8000
-```
-
-documents that the application listens on port 8000.
-
-It does not publish the port to the host.
-
-Port publishing is done with:
-
-```powershell
-docker run -p 8000:8000 ...
-```
-
----
-
-## Why `0.0.0.0`?
-
-We start Uvicorn with:
-
-```text
---host 0.0.0.0
-```
-
-so the application can accept connections through the container's network interface.
-
----
-
-## What is `docker exec`?
-
-`docker exec` allows us to execute a command inside a running container.
-
-Example:
-
-```powershell
-docker exec -it phase1-app bash
-```
-
-This is useful for:
-
-- Debugging
-- Inspecting files
-- Checking installed packages
-- Investigating configuration
-- Understanding the container environment
-
----
-
-# Phase 1 → Phase 2
-
-Phase 1 gives us the basic Docker workflow:
-
-```text
-FastAPI
-   ↓
-Dockerfile
-   ↓
-Docker Image
-   ↓
-Docker Container
-```
-
-However, there are several things we can improve.
-
-### Problem 1 — Ubuntu is a general-purpose base image
-
-We manually installed Python:
-
-```dockerfile
-apt-get install -y python3 python3-pip
-```
-
-Instead, we can use an image that already contains Python.
-
-Phase 2 will use:
-
-```dockerfile
-FROM python:3.12-slim
-```
-
----
-
-### Problem 2 — No automated tests
-
-Phase 1 only checks whether the application runs.
-
-Phase 2 introduces:
-
-```text
-pytest
-```
-
-so we can automatically verify the API endpoints.
-
----
-
-### Problem 3 — No linting
-
-Phase 2 introduces:
-
-```text
-Flake8
-```
-
-to catch Python code-quality and style problems.
-
----
-
-### Problem 4 — Build and runtime environments are mixed
-
-Phase 2 introduces a:
-
-```text
-multi-stage Docker build
-```
-
-so dependencies can be prepared in a builder stage and only the required runtime contents are copied into the final image.
-
----
-
-### Problem 5 — No CI
-
-In Phase 1, everything is executed manually.
-
-Phase 2 introduces:
-
-```text
-GitHub Actions
-```
-
-so every relevant push/pull request can automatically run:
-
-```text
-Lint
-  ↓
-Tests
-  ↓
-Docker Build
-```
-
----
-
-# Phase 1 → Phase 2 Summary
-
-```text
-PHASE 1
-
-Ubuntu
-  ↓
-Install Python manually
-  ↓
-Install dependencies
-  ↓
-Copy application
-  ↓
-Build image
-  ↓
-Run container
-
-
-PHASE 2
-
-Python Slim
-  ↓
-Multi-stage build
-  ↓
-Runtime dependencies
-  ↓
-Tests
-  ↓
-Flake8
-  ↓
-GitHub
-  ↓
-GitHub Actions
-  ↓
-Lint + Test
-  ↓
-Docker Build
-```
-
-The purpose of Phase 2 is therefore not simply to "make another Docker image".
-
-It is to take the basic containerized application from Phase 1 and start turning it into a **repeatable, testable CI workflow**.
-
----
-
-# Phase 2
-
-Phase 2 improves the basic Docker setup from Phase 1.
-
-The major changes are:
-
-- Use `python:3.12-slim`
-- Use a multi-stage Docker build
-- Separate runtime and development dependencies
-- Add automated tests with pytest
-- Add linting with Flake8
-- Add `.dockerignore`
-- Add Git/GitHub
-- Add GitHub Actions CI
-- Build the Docker image automatically in CI
-
----
-
-## 1. Create the Phase-2 Directory
-
-### Location
-
-Inside `docker-project`:
+From `docker-project`:
 
 ```powershell
 mkdir phase-2
 mkdir phase-2\app
-```
-
-Copy the FastAPI application from Phase 1:
-
-```powershell
 Copy-Item phase-1\app\main.py phase-2\app\main.py
-```
-
-Create the requirements files:
-
-```powershell
 New-Item phase-2\requirements.txt -ItemType File
 New-Item phase-2\requirements-dev.txt -ItemType File
 ```
 
----
-
-## 2. Create `requirements.txt`
-
-### File
-
-```text
-phase-2\requirements.txt
-```
-
-Contents:
+## 2. requirements.txt
 
 ```text
 fastapi
 uvicorn[standard]
 ```
 
-These are the runtime dependencies required by the FastAPI application.
-
----
-
-## 3. Create `requirements-dev.txt`
-
-### File
-
-```text
-phase-2\requirements-dev.txt
-```
-
-Contents:
+## 3. requirements-dev.txt
 
 ```text
 -r requirements.txt
@@ -1718,69 +573,32 @@ httpx
 flake8
 ```
 
-`requirements-dev.txt` contains the runtime dependencies plus development and testing dependencies.
+Runtime dependencies belong in `requirements.txt`.
+
+Development/testing tools belong in `requirements-dev.txt`.
 
 ---
 
-## 4. Create the Python Virtual Environment
-
-### Location
-
-Inside `docker-project`:
+## 4. Create virtual environment
 
 ```powershell
 cd phase-2
-```
-
-Create the virtual environment:
-
-```powershell
 python -m venv venv
-```
-
-Activate it:
-
-```powershell
 .\venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```powershell
 pip install -r requirements-dev.txt
-```
-
-Verify pytest:
-
-```powershell
 pytest --version
-```
-
-Verify Flake8:
-
-```powershell
 flake8 --version
 ```
 
 ---
 
-## 5. Create `test_main.py`
-
-### Location
-
-Inside:
-
-```text
-phase-2
-```
+## 5. Create test_main.py
 
 Create:
 
 ```text
-test_main.py
+phase-2\test_main.py
 ```
-
-Contents:
 
 ```python
 from fastapi.testclient import TestClient
@@ -1809,33 +627,21 @@ def test_info():
     assert response.status_code == 200
 ```
 
----
-
-## 6. Run the Tests
-
-### Location
-
-Inside `phase-2`:
+Run:
 
 ```powershell
 pytest -v
 ```
 
-Expected result:
+Expected:
 
 ```text
 3 passed
 ```
 
-The tests verify:
-
-- `GET /`
-- `GET /health`
-- `GET /info`
-
 ---
 
-## 7. Run Flake8
+## 6. Flake8
 
 Run:
 
@@ -1843,52 +649,23 @@ Run:
 flake8 app test_main.py --max-line-length=100
 ```
 
-If you get:
+If you see:
 
 ```text
-app\main.py:30:6: W292 no newline at end of file
-test_main.py:24:39: W292 no newline at end of file
+W292 no newline at end of file
 ```
 
-Fix it by opening the affected file, going to the last character, pressing `Enter`, and saving the file.
+Open the affected file, go to the last character, press Enter, save, and run Flake8 again.
 
-Run Flake8 again:
-
-```powershell
-flake8 app test_main.py --max-line-length=100
-```
-
-Expected result:
+Expected:
 
 ```text
 No output
 ```
 
-Run the tests again:
-
-```powershell
-pytest -v
-```
-
 ---
 
-## 8. Create `.dockerignore`
-
-### Location
-
-Inside:
-
-```text
-phase-2
-```
-
-Create:
-
-```text
-.dockerignore
-```
-
-Contents:
+## 7. Create .dockerignore
 
 ```text
 venv
@@ -1897,39 +674,11 @@ __pycache__
 .git
 ```
 
-### Why?
-
-The `venv` directory can contain thousands of files and potentially hundreds of MB.
-
-We do not want Docker receiving the local virtual environment as part of the build context.
-
-We also exclude:
-
-- `__pycache__`
-- compiled Python files
-- Git metadata
-
-This keeps the Docker build context smaller and cleaner.
-
 ---
 
-## 9. Create the Phase-2 Dockerfile
+## 8. Multi-stage Dockerfile
 
-### Location
-
-Inside:
-
-```text
-phase-2
-```
-
-Create:
-
-```text
-Dockerfile
-```
-
-Contents:
+Create `phase-2\Dockerfile`:
 
 ```dockerfile
 # =========================
@@ -1960,80 +709,48 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
+### Why multi-stage?
+
+The builder stage installs dependencies.
+
+The final stage receives only what is required at runtime.
+
+```text
+Builder
+  ↓
+Install dependencies
+  ↓
+Final image
+  ↓
+Runtime dependencies + application
+```
+
+Development tools such as pytest and Flake8 are not copied into the runtime image.
+
 ---
 
-## 10. Build the Phase-2 Docker Image
-
-### Location
-
-Inside `phase-2`:
+## 9. Build and run Phase 2
 
 ```powershell
 docker build -t docker-mastery:phase2 .
-```
-
-Check the images:
-
-```powershell
 docker images
-```
-
-### Important Comparison
-
-Phase 1 used Ubuntu and manually installed Python.
-
-Phase 2 uses:
-
-- `python:3.12-slim`
-- Multi-stage Docker build
-
-The Python base image already contains Python, so we no longer need to manually install Python inside an Ubuntu image.
-
----
-
-## 11. Run the Phase-2 Container
-
-Run:
-
-```powershell
 docker run -d --name phase2-app -p 8000:8000 docker-mastery:phase2
-```
-
-Check the running container:
-
-```powershell
 docker ps
-```
-
-Check logs:
-
-```powershell
 docker logs phase2-app
 ```
 
----
-
-## 12. Inspect the Container
-
-Enter the container:
+Inspect:
 
 ```powershell
 docker exec -it phase2-app bash
 ```
 
-Inside the container:
+Inside:
 
 ```bash
 ls
-```
-
-Then:
-
-```bash
 ls app
 ```
-
-You should see the application.
 
 You should not see:
 
@@ -2044,8 +761,6 @@ requirements-dev.txt
 .git
 ```
 
-The final Docker image only needs the application and runtime dependencies.
-
 Exit:
 
 ```bash
@@ -2054,162 +769,40 @@ exit
 
 ---
 
-# Phase 2 — Git and GitHub
-
-## 13. Go Back to the Project Root
-
-After exiting the container:
-
-### Current location
-
-```text
-docker-project\phase-2
-```
-
-Go back to the project root:
-
-```powershell
-cd ..
-```
-
-You should now be inside:
-
-```text
-docker-project
-```
-
----
-
-## 14. Check Git Status
-
-Run:
-
-```powershell
-git status
-```
-
-If the Phase-2 files have not been added to Git yet, they may appear as untracked files.
-
----
-
-## 15. Add the Project Files
+# Git setup
 
 From `docker-project`:
 
 ```powershell
-git add .
-```
-
-Check:
-
-```powershell
+cd ..
 git status
-```
-
----
-
-## 16. Commit the Project
-
-Run:
-
-```powershell
+git add .
 git commit -m "Add Docker Phase 1 and Phase 2"
 ```
 
-If Git shows:
-
-```text
-Author identity unknown
-```
-
-Configure your identity:
-
-```powershell
-git config --global user.name "Your Name"
-git config --global user.email "your-email@example.com"
-```
-
-Then commit again:
-
-```powershell
-git commit -m "Add Docker Phase 1 and Phase 2"
-```
-
----
-
-## 17. Create / Connect the GitHub Repository
-
-Create a GitHub repository named:
-
-```text
-containerized-fastapi-cicd
-```
-
-Add the remote:
+Create/connect the GitHub repository:
 
 ```powershell
 git remote add origin https://github.com/<YOUR_USERNAME>/containerized-fastapi-cicd.git
-```
-
-Check:
-
-```powershell
 git remote -v
 ```
 
-> Replace `<YOUR_USERNAME>` with your own GitHub username.
-
----
-
-## 18. Push to GitHub
-
-The project uses the `main` branch.
-
-If your local branch is already named `main`:
+Push:
 
 ```powershell
 git push -u origin main
 ```
 
-If Git asks for authentication, complete the authentication in the browser.
-
-GitHub does not accept a normal account password for Git HTTPS authentication.
-
----
-
-## 19. If Push Is Rejected with `fetch first`
-
-If the remote repository already contains an initial commit, Git may reject the push.
-
-Run:
+If the remote already has a separate initial commit and push is rejected:
 
 ```powershell
 git pull origin main --allow-unrelated-histories
-```
-
-Then:
-
-```powershell
 git log --oneline --graph --all --decorate
-```
-
-Check:
-
-```powershell
 git status
-```
-
-Then push again:
-
-```powershell
 git push -u origin main
 ```
 
----
-
-## 20. Final Git Check
-
-Run:
+Final check:
 
 ```powershell
 git status
@@ -2228,78 +821,20 @@ nothing to commit, working tree clean
 
 # Phase 2 — GitHub Actions CI
 
-GitHub Actions is used to automatically run linting, tests, and a Docker build.
-
----
-
-## 21. Create the GitHub Actions Folder
-
-GitHub Actions workflow files are stored in:
+Create:
 
 ```text
-docker-project\.github\workflows\
+docker-project\.github\workflows\ci.yml
 ```
 
-From `docker-project`:
+If needed:
 
 ```powershell
 mkdir .github
 mkdir .github\workflows
 ```
 
----
-
-## 22. Move the Phase-2 CI Workflow
-
-If the workflow was initially created inside:
-
-```text
-phase-2\.github\workflows\ci.yml
-```
-
-move it to:
-
-```text
-docker-project\.github\workflows\ci.yml
-```
-
-Run from `docker-project`:
-
-```powershell
-Move-Item phase-2\.github\workflows\ci.yml .github\workflows\ci.yml
-```
-
-Check:
-
-```powershell
-git status
-```
-
-Git may recognize this as a rename:
-
-```text
-phase-2/.github/workflows/ci.yml
-        ->
-.github/workflows/ci.yml
-```
-
-Stage it:
-
-```powershell
-git add .
-```
-
----
-
-## 23. Create / Verify `ci.yml`
-
-### Location
-
-```text
-docker-project\.github\workflows\ci.yml
-```
-
-Contents:
+Workflow:
 
 ```yaml
 name: Phase 2 CI
@@ -2363,69 +898,13 @@ jobs:
           tags: docker-mastery:phase2
 ```
 
-You can verify the file from PowerShell:
+Verify:
 
 ```powershell
 Get-Content .github\workflows\ci.yml
 ```
 
----
-
-## 24. Understand the Phase-2 CI Flow
-
-```text
-git push
-    |
-    v
-GitHub Actions
-    |
-    v
-lint-and-test
-    |
-    +--> Checkout code
-    +--> Install Python 3.12
-    +--> Install dependencies
-    +--> Run Flake8
-    +--> Run pytest
-    |
-    | SUCCESS
-    v
-build-image
-    |
-    +--> Setup Docker Buildx
-    +--> Build Docker image
-    |
-    v
-PASS
-```
-
-The `build-image` job contains:
-
-```yaml
-needs: lint-and-test
-```
-
-Therefore, the Docker image is built only if linting and testing succeed.
-
----
-
-## 25. Understand `push: false`
-
-The Docker build step contains:
-
-```yaml
-push: false
-```
-
-This means GitHub Actions builds the Docker image but does not push it to Docker Hub or another container registry.
-
-At this stage, CI only verifies that the Docker image can be built successfully.
-
----
-
-## 26. Commit the CI Workflow
-
-Run:
+Commit:
 
 ```powershell
 git add .
@@ -2433,275 +912,90 @@ git commit -m "Add Phase 2 CI workflow"
 git push
 ```
 
----
+Go to GitHub → Actions.
 
-## 27. Check GitHub Actions
+A successful workflow should show a green check.
 
-Open the GitHub repository and go to:
+### Why `needs: lint-and-test`?
 
-```text
-Actions
-```
-
-You should see:
+It means:
 
 ```text
-Phase 2 CI
+lint-and-test
+      |
+      | SUCCESS
+      ↓
+build-image
 ```
 
-A successful workflow will show a green check mark.
+If linting or tests fail, the Docker build does not run.
 
 ---
 
-# Phase 2 — Interview Notes
+## Phase 2 interview concepts
 
-## What did we do in Phase 2?
+Know:
 
-Phase 2 improved the basic Docker setup from Phase 1.
-
-We moved from a manually configured Ubuntu container to a Python Slim base image and introduced a multi-stage Docker build.
-
-We also added:
-
-- Automated tests
-- Flake8 linting
-- Git
-- GitHub
-- GitHub Actions CI
-- Docker image building in CI
+- pytest
+- Flake8
+- CI
+- GitHub Actions
+- GitHub Actions runner
+- `needs`
+- multi-stage builds
+- build context
+- `requirements.txt` vs `requirements-dev.txt`
+- why tests should run before building/deploying
 
 ---
 
-## Why `python:3.12-slim`?
+# Phase 3 — Container Hardening
 
-Instead of starting with a general Ubuntu image and manually installing Python, we use an official Python image that already contains Python.
+Phase 3 makes the container more production-oriented.
 
-The Slim variant is smaller than the full Python image and contains fewer unnecessary packages.
+Main changes:
 
----
-
-## What is a Multi-Stage Build?
-
-There are two stages.
-
-### Stage 1 — Builder
-
-```dockerfile
-FROM python:3.12-slim AS builder
-```
-
-This stage installs the Python dependencies.
-
-### Stage 2 — Final Image
-
-```dockerfile
-FROM python:3.12-slim
-```
-
-This is the final runtime image.
-
-Only the installed dependencies are copied:
-
-```dockerfile
-COPY --from=builder /install /usr/local
-```
-
-And the application is copied:
-
-```dockerfile
-COPY app/ ./app/
-```
-
-### Why?
-
-The build environment may contain tools and files that are not required to run the application.
-
-Using separate builder and final stages keeps the final image cleaner and smaller.
-
----
-
-## Why `requirements.txt` and `requirements-dev.txt`?
-
-### `requirements.txt`
-
-Contains runtime dependencies:
-
-```text
-fastapi
-uvicorn[standard]
-```
-
-### `requirements-dev.txt`
-
-Contains runtime dependencies plus development/testing tools:
-
-```text
--r requirements.txt
-pytest
-httpx
-flake8
-```
-
-This separation prevents development-only packages from being required in the production Docker image.
-
----
-
-## Why `.dockerignore`?
-
-`.dockerignore` prevents unnecessary files from being sent as part of the Docker build context.
-
-We exclude:
-
-```text
-venv
-__pycache__
-*.pyc
-.git
-```
-
-This keeps the build context smaller and prevents development-only files from entering the Docker build context.
-
----
-
-## What is pytest?
-
-`pytest` is a Python testing framework.
-
-Our tests verify:
-
-```text
-GET /
-GET /health
-GET /info
-```
-
----
-
-## What is Flake8?
-
-Flake8 is a Python linting tool.
-
-It checks Python code for common style and formatting problems.
-
-Example:
-
-```text
-W292 no newline at end of file
-```
-
-This was fixed by adding a newline at the end of the affected files.
-
----
-
-## What is GitHub Actions?
-
-GitHub Actions is a CI/CD platform integrated into GitHub.
-
-Our workflow automatically:
-
-1. Checks out the repository.
-2. Installs Python.
-3. Installs dependencies.
-4. Runs Flake8.
-5. Runs pytest.
-6. Builds the Docker image.
-
----
-
-## Why Run Tests Before Building the Image?
-
-We do not want to build and potentially deploy an application whose tests or code-quality checks have already failed.
-
-The:
-
-```yaml
-needs: lint-and-test
-```
-
-dependency makes the Docker build wait for linting and testing.
-
----
-
-# Phase 3
-
-Phase 3 makes the container more production-oriented and secure.
-
-### Main changes
-
-1. Alpine base image
-2. Multi-stage Docker build
-3. Non-root user
+1. `python:3.12-alpine`
+2. Multi-stage build
+3. Non-root `appuser`
 4. Docker `HEALTHCHECK`
-5. GitHub Actions CI
-6. Docker Buildx in CI
+5. Separate Phase 3 CI workflow
+6. Docker Buildx
 
 ---
 
-## 1. Check Git Status
+## 1. Check Git
 
-### Location
-
-```text
-docker-project
-```
-
-Run:
+From `docker-project`:
 
 ```powershell
 git status
 ```
 
-Expected:
-
-```text
-On branch main
-Your branch is up to date with 'origin/main'.
-
-nothing to commit, working tree clean
-```
+Start Phase 3 with a clean repository.
 
 ---
 
-## 2. Create Phase-3 Directory
-
-### Location
-
-```text
-docker-project
-```
-
-Run:
+## 2. Create Phase 3
 
 ```powershell
 mkdir phase-3
 mkdir phase-3\app
-```
-
-Copy the Phase-2 application:
-
-```powershell
 Copy-Item phase-2\app\main.py phase-3\app\main.py
-```
-
-Create the requirements files:
-
-```powershell
 New-Item phase-3\requirements.txt -ItemType File
 New-Item phase-3\requirements-dev.txt -ItemType File
 ```
 
----
+## 3. Requirements
 
-## 3. Create Phase-3 Requirements
-
-### `phase-3\requirements.txt`
+`phase-3\requirements.txt`:
 
 ```text
 fastapi
 uvicorn[standard]
 ```
 
-### `phase-3\requirements-dev.txt`
+`phase-3\requirements-dev.txt`:
 
 ```text
 -r requirements.txt
@@ -2712,62 +1006,22 @@ flake8
 
 ---
 
-## 4. Create the Phase-3 Virtual Environment
-
-### Location
-
-```text
-docker-project
-```
-
-Go to Phase 3:
+## 4. Virtual environment
 
 ```powershell
 cd phase-3
-```
-
-Create the virtual environment:
-
-```powershell
 python -m venv venv
-```
-
-Activate:
-
-```powershell
 .\venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```powershell
 pip install -r requirements-dev.txt
-```
-
-Verify:
-
-```powershell
 pytest --version
 flake8 --version
 ```
 
 ---
 
-## 5. Create Phase-3 `test_main.py`
+## 5. Tests
 
-### Location
-
-```text
-phase-3
-```
-
-Create:
-
-```text
-test_main.py
-```
-
-Contents:
+Create `phase-3\test_main.py`:
 
 ```python
 from fastapi.testclient import TestClient
@@ -2796,16 +1050,6 @@ def test_info():
     assert response.status_code == 200
 ```
 
----
-
-## 6. Run Phase-3 Tests
-
-### Location
-
-```text
-phase-3
-```
-
 Run:
 
 ```powershell
@@ -2818,53 +1062,17 @@ Expected:
 3 passed
 ```
 
----
-
-## 7. Run Flake8
-
-Run:
+Run Flake8:
 
 ```powershell
 flake8 app test_main.py --max-line-length=100
 ```
 
-If you get:
-
-```text
-W292 no newline at end of file
-```
-
-Go to the end of the affected file, press `Enter`, and save.
-
-Run again:
-
-```powershell
-flake8 app test_main.py --max-line-length=100
-```
-
-Expected:
-
-```text
-No output
-```
+Fix `W292` by adding a newline at the end of the affected file if necessary.
 
 ---
 
-## 8. Create Phase-3 `.dockerignore`
-
-### Location
-
-```text
-phase-3
-```
-
-Create:
-
-```text
-.dockerignore
-```
-
-Contents:
+## 6. .dockerignore
 
 ```text
 venv
@@ -2873,34 +1081,11 @@ __pycache__
 .git
 ```
 
-The same principle as Phase 2 applies.
-
-Do not send:
-
-- Local virtual environments
-- Python cache files
-- Compiled Python files
-- Git metadata
-
-as Docker build context.
-
 ---
 
-## 9. Create Phase-3 Dockerfile
+## 7. Phase 3 Dockerfile
 
-### Location
-
-```text
-phase-3
-```
-
-Create:
-
-```text
-Dockerfile
-```
-
-Contents:
+Create `phase-3\Dockerfile`:
 
 ```dockerfile
 # =========================
@@ -2910,7 +1095,6 @@ FROM python:3.12-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies
 RUN apk add --no-cache \
     gcc \
     musl-dev \
@@ -2928,64 +1112,50 @@ FROM python:3.12-alpine
 
 WORKDIR /app
 
-# Copy only installed Python packages
 COPY --from=builder /install /usr/local
 
-# Create non-root user
 RUN addgroup -S appgroup && \
     adduser -S appuser -G appgroup
 
 COPY app/ ./app/
 
-# Run application as non-root user
 USER appuser
 
 EXPOSE 8000
 
-# Container health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:8000/health || exit 1
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
----
+### Why Alpine?
 
-## 10. Build the Phase-3 Image
+Alpine is a lightweight Linux distribution commonly used for containers.
 
-### Location
+### Why non-root?
+
+Running the application as `appuser` reduces privileges.
+
+### Why HEALTHCHECK?
+
+Docker can use the health check to determine whether the application is healthy.
+
+The check calls:
 
 ```text
-phase-3
+http://127.0.0.1:8000/health
 ```
 
-Run:
+---
+
+## 8. Build Phase 3
+
+Inside `phase-3`:
 
 ```powershell
 docker build -t docker-mastery:phase3 .
 ```
-
-Check:
-
-```powershell
-docker images
-```
-
-### Important Comparison
-
-| Feature | Phase 2 | Phase 3 |
-|---|---|---|
-| Base image | `python:3.12-slim` | `python:3.12-alpine` |
-| Multi-stage build | Yes | Yes |
-| Non-root user | No | Yes |
-| HEALTHCHECK | No | Yes |
-| Container hardening | Basic | Improved |
-
-Phase 3 focuses on container hardening.
-
----
-
-## 11. Run the Phase-3 Container
 
 Run:
 
@@ -2997,164 +1167,16 @@ Check:
 
 ```powershell
 docker ps
-```
-
-Check logs:
-
-```powershell
 docker logs phase3-app
 ```
 
-The container should eventually show:
+Eventually the container should show:
 
 ```text
 Up ... (healthy)
 ```
 
----
-
-## 12. Understand `HEALTHCHECK`
-
-The Dockerfile contains:
-
-```dockerfile
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:8000/health || exit 1
-```
-
-Docker periodically checks:
-
-```text
-http://127.0.0.1:8000/health
-```
-
-If the check succeeds:
-
-```text
-healthy
-```
-
-If repeated checks fail:
-
-```text
-unhealthy
-```
-
----
-
-## 13. Enter the Phase-3 Container
-
-Alpine normally uses `sh` instead of `bash`.
-
-Run:
-
-```powershell
-docker exec -it phase3-app sh
-```
-
-Inside:
-
-```sh
-ls
-```
-
-Then:
-
-```sh
-ls app
-```
-
-`main.py` should be present.
-
-The following should not be present:
-
-```text
-venv
-test_main.py
-requirements-dev.txt
-.git
-```
-
-Exit:
-
-```sh
-exit
-```
-
----
-
-## 14. Verify the Non-Root User
-
-Run:
-
-```powershell
-docker exec -it phase3-app sh
-```
-
-Inside the container:
-
-```sh
-whoami
-```
-
-Expected:
-
-```text
-appuser
-```
-
-Also run:
-
-```sh
-id
-```
-
-This displays the user and group information.
-
-Exit:
-
-```sh
-exit
-```
-
----
-
-## 15. Why Use a Non-Root User?
-
-Containers can run processes as root by default.
-
-Running the application as a dedicated non-root user reduces unnecessary privileges.
-
-Phase 3 creates:
-
-```text
-appgroup
-appuser
-```
-
-and then uses:
-
-```dockerfile
-USER appuser
-```
-
-### Interview Answer
-
-> I hardened the container by creating a dedicated non-root user and running the application under that user instead of root.
-
----
-
-## 16. Test Phase-3 Endpoints
-
-From the Windows host:
-
-```powershell
-curl http://localhost:8000/
-curl http://localhost:8000/health
-curl http://localhost:8000/info
-```
-
-You can also open these in a browser:
+Verify the application:
 
 ```text
 http://localhost:8000
@@ -3163,95 +1185,249 @@ http://localhost:8000/info
 http://localhost:8000/docs
 ```
 
-Then check:
-
-```powershell
-docker ps
-```
-
-The container should show:
-
-```text
-healthy
-```
-
 ---
 
-## 17. Stop the Phase-3 Container
+# Phase 3 CI
 
-When testing is complete:
+Create:
+
+```text
+.github\workflows\phase3-ci.yml
+```
+
+The workflow should:
+
+```text
+git push
+    ↓
+GitHub Actions
+    ↓
+lint-and-test
+    ├── Flake8
+    └── pytest
+    ↓
+build-image
+    └── Docker Buildx
+```
+
+Important:
+
+```yaml
+needs: lint-and-test
+```
+
+Path filter:
+
+```yaml
+paths:
+  - "phase-3/**"
+  - ".github/workflows/phase3-ci.yml"
+```
+
+Commit:
 
 ```powershell
-docker stop phase3-app
+cd ..
+git add .
+git commit -m "Add Phase 3 Docker hardening and CI"
+git push
 ```
 
 Check:
 
-```powershell
-docker ps
+```text
+GitHub → Actions → Phase 3 CI
 ```
 
-The stopped container still exists:
+A successful workflow shows a green check.
 
-```powershell
-docker ps -a
+---
+
+# Phase 3 interview cheat sheet
+
+### What changed?
+
+> I hardened the container by moving to Alpine, keeping a multi-stage build, running the application as a non-root user, and adding a Docker HEALTHCHECK. I also added CI that runs Flake8 and pytest before building the Docker image.
+
+Important terms:
+
+- Alpine
+- Multi-stage build
+- Non-root user
+- HEALTHCHECK
+- Build context
+- Buildx
+- CI
+- `needs`
+
+---
+
+# Phase 4 — GitHub Actions → Docker Hub
+
+Phase 4 takes the image built in CI and publishes it to Docker Hub.
+
+Before Phase 4:
+
+```text
+git push
+    ↓
+GitHub Actions
+    ↓
+Flake8
+    ↓
+pytest
+    ↓
+Docker build
+    ↓
+PASS
 ```
 
-Start it again:
+Phase 4:
 
-```powershell
-docker start phase3-app
+```text
+git push
+    ↓
+GitHub Actions
+    ↓
+Flake8
+    ↓
+pytest
+    ↓
+Docker build
+    ↓
+Docker Hub login
+    ↓
+Docker push
+    ↓
+Docker Hub
 ```
 
-Remove it when no longer needed:
+The important change is:
 
-```powershell
-docker rm phase3-app
+```yaml
+push: false
+```
+
+becomes:
+
+```yaml
+push: true
 ```
 
 ---
 
-# Phase 3 — GitHub Actions
+## 1. Create Docker Hub repository
 
-## 18. Create the Workflow Folder
-
-### Location
+Create a public Docker Hub repository:
 
 ```text
-docker-project
+containerized-fastapi-cicd
 ```
 
-If the folders do not already exist:
+Image format:
 
-```powershell
-mkdir .github
-mkdir .github\workflows
+```text
+YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
 ```
+
+Docker Hub is a container registry.
+
+It stores images so other machines can later pull and run them.
 
 ---
 
-## 19. Create `phase3-ci.yml`
+## 2. Create Docker Hub access token
 
-### Location
+Do not put your Docker Hub password in the workflow.
+
+Create a Docker Hub access token with permission to push images.
+
+Keep the token private.
+
+Never put it in:
+
+- source code
+- README
+- workflow file
+- Git commit
+
+---
+
+## 3. Add GitHub Secrets
+
+Go to:
 
 ```text
-docker-project\.github\workflows
+GitHub Repository
+→ Settings
+→ Secrets and variables
+→ Actions
+→ New repository secret
 ```
 
 Create:
 
 ```text
-phase3-ci.yml
+DOCKERHUB_USERNAME
+```
+
+Value:
+
+```text
+Your Docker Hub username
+```
+
+Create:
+
+```text
+DOCKERHUB_TOKEN
+```
+
+Value:
+
+```text
+Your Docker Hub access token
+```
+
+The workflow uses:
+
+```yaml
+${{ secrets.DOCKERHUB_USERNAME }}
+${{ secrets.DOCKERHUB_TOKEN }}
+```
+
+The actual token is never stored in source code.
+
+---
+
+## 4. Check repository
+
+From:
+
+```text
+docker-project
+```
+
+run:
+
+```powershell
+git status
 ```
 
 ---
 
-## 20. Phase-3 CI File
+## 5. Phase 4 workflow
 
-Contents:
+Create:
+
+```text
+.github\workflows\phase4-ci-cd.yml
+```
+
+Example:
 
 ```yaml
-name: Phase 3 CI
+name: Phase 4 - CI/CD to Docker Hub
 
 on:
   push:
@@ -3259,14 +1435,7 @@ on:
       - main
     paths:
       - "phase-3/**"
-      - ".github/workflows/phase3-ci.yml"
-
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "phase-3/**"
-      - ".github/workflows/phase3-ci.yml"
+      - ".github/workflows/phase4-ci-cd.yml"
 
 jobs:
   lint-and-test:
@@ -3294,7 +1463,7 @@ jobs:
         run: |
           pytest -v phase-3/test_main.py
 
-  build-image:
+  build-and-push:
     runs-on: ubuntu-latest
     needs: lint-and-test
 
@@ -3302,302 +1471,1458 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./phase-3
           file: ./phase-3/Dockerfile
-          push: false
-          tags: docker-mastery:phase3
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/containerized-fastapi-cicd:latest
 ```
 
 ---
 
-## 21. Understand Phase-3 CI
+## 6. Understand the workflow
+
+There are two jobs:
 
 ```text
+lint-and-test
+      |
+      | SUCCESS
+      ↓
+build-and-push
+```
+
+The dependency:
+
+```yaml
+needs: lint-and-test
+```
+
+prevents an image from being published when tests/linting fail.
+
+### `actions/checkout`
+
+Copies repository code onto the GitHub Actions runner.
+
+### `setup-python`
+
+Installs Python 3.12 on the runner.
+
+### `docker/login-action`
+
+Authenticates the runner with Docker Hub.
+
+### `docker/setup-buildx-action`
+
+Sets up Docker Buildx.
+
+### `docker/build-push-action`
+
+Builds and pushes the image.
+
+---
+
+## 7. Understand `context`
+
+```yaml
+context: ./phase-3
+file: ./phase-3/Dockerfile
+```
+
+This means:
+
+```text
+phase-3/
+├── Dockerfile
+├── app/
+└── requirements.txt
+```
+
+is used as the Docker build context.
+
+This is equivalent to locally doing:
+
+```powershell
+cd phase-3
+docker build -t docker-mastery:phase3 .
+```
+
+---
+
+## 8. Understand `push: true`
+
+Phase 3:
+
+```yaml
+push: false
+```
+
+```text
+Docker build
+    ↓
+Image exists only on CI runner
+```
+
+Phase 4:
+
+```yaml
+push: true
+```
+
+```text
+Docker build
+    ↓
+Docker image
+    ↓
+Docker Hub
+```
+
+---
+
+## 9. Understand image tag
+
+```text
+USERNAME/REPOSITORY:TAG
+```
+
+Example:
+
+```text
+swayam248/containerized-fastapi-cicd:latest
+```
+
+Here:
+
+```text
+swayam248
+    ↓
+Docker Hub username
+
+containerized-fastapi-cicd
+    ↓
+Repository
+
+latest
+    ↓
+Image tag
+```
+
+`latest` is intentionally used for learning.
+
+Later, better strategies include:
+
+- semantic version tags
+- Git commit SHA
+- release tags
+
+---
+
+## 10. Check and push
+
+```powershell
+git status
+Get-Content .github\workflows\phase4-ci-cd.yml
+```
+
+Make sure the file contains:
+
+```text
+${{ secrets.DOCKERHUB_USERNAME }}
+${{ secrets.DOCKERHUB_TOKEN }}
+```
+
+Never put the actual token in the file.
+
+Commit:
+
+```powershell
+git add .github/workflows/phase4-ci-cd.yml
+git commit -m "Add Phase 4 Docker Hub CI/CD"
 git push
+```
+
+---
+
+## 11. Check GitHub Actions
+
+Go to:
+
+```text
+GitHub → Actions
+```
+
+Find:
+
+```text
+Phase 4 - CI/CD to Docker Hub
+```
+
+Expected:
+
+```text
+lint-and-test
+    ├── Flake8
+    └── pytest
+        ↓
+build-and-push
+    ├── Docker Login
+    ├── Buildx
+    ├── Docker Build
+    └── Docker Push
+        ↓
+PASS
+```
+
+A successful workflow shows a green check.
+
+---
+
+## 12. Check Docker Hub
+
+Open:
+
+```text
+containerized-fastapi-cicd
+```
+
+You should see:
+
+```text
+latest
+```
+
+GitHub Actions performed the build and push automatically.
+
+---
+
+## 13. Pull the image locally
+
+```powershell
+docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+Check:
+
+```powershell
+docker images
+```
+
+This proves the image can be consumed independently of GitHub Actions.
+
+---
+
+## 14. Run Docker Hub image
+
+```powershell
+docker run -d --name phase4-app -p 8000:8000 YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+Check:
+
+```powershell
+docker ps
+docker logs phase4-app
+```
+
+Test:
+
+```text
+http://localhost:8000
+http://localhost:8000/health
+http://localhost:8000/info
+http://localhost:8000/docs
+```
+
+The container should eventually show:
+
+```text
+Up ... (healthy)
+```
+
+The health check comes from the Phase 3 Dockerfile.
+
+Stop/remove after testing:
+
+```powershell
+docker stop phase4-app
+docker rm phase4-app
+```
+
+---
+
+# Phase 4 complete flow
+
+```text
+Developer
     |
+    | git push
     v
 GitHub
     |
     v
 GitHub Actions
     |
-    v
-lint-and-test
-    |
-    +--> Checkout
-    +--> Python 3.12
-    +--> Install dependencies
     +--> Flake8
     +--> pytest
     |
     | SUCCESS
     v
-build-image
+Build and Push
     |
+    +--> Docker Login
     +--> Docker Buildx
+    +--> Docker Build
+    +--> Docker Push
+    |
+    v
+Docker Hub
+    |
+    | docker pull
+    v
+Docker Container
+    |
+    v
+FastAPI
+```
+
+---
+
+# Phase 5 — AWS EC2
+
+Phase 5 takes the Docker image from Docker Hub and deploys it to an AWS EC2 server.
+
+## What are we adding?
+
+```text
+Docker Hub
+    ↓
+AWS EC2
+    ↓
+Docker Container
+    ↓
+FastAPI
+    ↓
+Internet
+```
+
+The important DevOps principle is:
+
+```text
+Build once
+    ↓
+Store artifact
+    ↓
+Deploy the same artifact
+```
+
+We do NOT build the Docker image again on EC2.
+
+---
+
+# Phase 5 architecture
+
+```text
+Developer
+    |
+    | git push
+    v
+GitHub
+    |
+    v
+GitHub Actions
+    |
+    +--> Flake8
+    +--> pytest
     +--> Docker build
     |
     v
-PASS
+Docker Hub
+    |
+    | docker pull
+    v
+AWS EC2
+    |
+    +--> Security Group
+    |
+    v
+Docker Container
+    |
+    v
+FastAPI
+    |
+    v
+Internet
 ```
-
-The important dependency is:
-
-```yaml
-needs: lint-and-test
-```
-
-Therefore, `build-image` waits for `lint-and-test`.
-
-If Flake8 or pytest fails, `build-image` does not run.
 
 ---
 
-## 22. Understand Path Filters
+## 1. AWS EC2 concepts
 
-The workflow contains:
+### EC2
 
-```yaml
-paths:
-  - "phase-3/**"
-  - ".github/workflows/phase3-ci.yml"
-```
+EC2 stands for Elastic Compute Cloud.
 
-This means the workflow runs when:
+It provides virtual servers in AWS.
 
-1. Files inside `phase-3` change.
-2. The Phase-3 workflow itself changes.
+### EC2 instance
 
-A change only inside Phase 1 or Phase 2 does not trigger this Phase-3 workflow.
+A virtual machine running in AWS with CPU, memory, storage and networking resources.
+
+### AMI
+
+Amazon Machine Image.
+
+A template used to launch an EC2 instance.
+
+We use an Ubuntu Server AMI.
+
+### Instance type
+
+Defines resources such as CPU, memory and network performance.
+
+For this learning project, use a small instance appropriate for the current AWS free-tier/credit eligibility.
+
+### Key pair
+
+Used for secure SSH access.
+
+The private `.pem` key must never be committed to GitHub.
+
+### SSH
+
+Secure Shell. Used to remotely administer the Linux server.
+
+### Security Group
+
+A virtual firewall controlling network access to the EC2 instance.
 
 ---
 
-## 23. Stage Phase-3
+# 2. Launch EC2
 
-### Location
+In AWS:
 
 ```text
-docker-project
+AWS Console
+→ EC2
+→ Launch instance
 ```
 
-Check:
+Use:
 
-```powershell
-git status
+```text
+Name:
+docker-project-server
 ```
 
-Stage:
+Select:
 
-```powershell
-git add .
+```text
+Ubuntu Server
 ```
 
-Check again:
+Choose a small instance appropriate for your account.
+
+Create/select a key pair.
+
+Example:
+
+```text
+docker-project-key
+```
+
+Download the `.pem` file.
+
+Keep it secure.
+
+---
+
+# 3. Configure Security Group
+
+Inbound rules:
+
+### SSH
+
+```text
+Type: SSH
+Port: 22
+Source: My IP
+```
+
+Purpose:
+
+```text
+Your PC
+    ↓
+SSH :22
+    ↓
+EC2
+```
+
+### FastAPI
+
+```text
+Type: Custom TCP
+Port: 8000
+Source: 0.0.0.0/0
+```
+
+Purpose:
+
+```text
+Internet
+    ↓
+EC2 :8000
+    ↓
+FastAPI
+```
+
+For learning, port 8000 is exposed publicly.
+
+A production system would normally use a load balancer/reverse proxy and HTTPS instead of directly exposing the application port.
+
+---
+
+# 4. Connect to EC2
+
+On Windows PowerShell, go to the `.pem` location:
 
 ```powershell
-git status
+cd C:\path\to\key
+dir
+```
+
+Connect:
+
+```powershell
+ssh -i "docker-project-key.pem" ubuntu@YOUR_EC2_PUBLIC_IP
+```
+
+Example:
+
+```powershell
+ssh -i "docker-project-key.pem" ubuntu@13.xxx.xxx.xxx
+```
+
+Successful connection:
+
+```text
+ubuntu@ip-172-31-33-130:~$
+```
+
+From this point, commands are being executed on EC2.
+
+---
+
+# 5. Prepare Ubuntu
+
+Update package information:
+
+```bash
+sudo apt update
+```
+
+Upgrade packages:
+
+```bash
+sudo apt upgrade -y
+```
+
+Check Ubuntu:
+
+```bash
+lsb_release -a
+```
+
+Meaning:
+
+```text
+sudo
+    → administrator privileges
+
+apt update
+    → refresh package information
+
+apt upgrade
+    → upgrade installed packages
+
+-y
+    → automatically answer yes
 ```
 
 ---
 
-## 24. Commit Phase-3
+# 6. Install Docker
 
-Run:
+Install:
 
-```powershell
-git commit -m "Add Phase 3 Docker hardening and CI"
+```bash
+sudo apt install docker.io -y
 ```
 
----
+Verify:
 
-## 25. Push Phase-3
-
-Run:
-
-```powershell
-git push
+```bash
+docker --version
 ```
 
----
+Check Docker service:
 
-## 26. Check GitHub Actions
+```bash
+sudo systemctl status docker
+```
 
-Open the GitHub repository.
-
-Go to:
+Look for:
 
 ```text
-Actions
+Active: active (running)
 ```
 
-Find:
+If the status screen opens:
 
 ```text
-Phase 3 CI
+q
 ```
 
-The workflow should run automatically.
+Enable Docker at boot:
 
-A successful workflow shows a green check mark.
-
----
-
-## 27. Phase-3 CI Formatting Issue
-
-If Flake8 reports:
-
-```text
-W292 no newline at end of file
+```bash
+sudo systemctl enable docker
 ```
 
-Open:
+Test:
 
-```text
-phase-3\test_main.py
-```
-
-Go to the final character.
-
-Press `Enter`.
-
-Save.
-
-Verify locally:
-
-```powershell
-flake8 app test_main.py --max-line-length=100
-```
-
-Then:
-
-```powershell
-pytest -v
+```bash
+sudo docker run hello-world
 ```
 
 Expected:
 
 ```text
-3 passed
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
 ```
 
 ---
 
-## 28. Commit the Fix
+# 7. Allow ubuntu user to run Docker without sudo
 
 Run:
 
-```powershell
-git add phase-3/test_main.py
-git commit -m "Fix Phase 3 test file formatting"
-git push
+```bash
+sudo usermod -aG docker $USER
 ```
 
-GitHub Actions will run again.
+Apply the group change:
 
----
+```bash
+newgrp docker
+```
 
-## 29. Successful Phase-3 CI
+Test:
 
-Final flow:
+```bash
+docker ps
+```
+
+Check groups:
+
+```bash
+groups
+```
+
+The output should contain:
 
 ```text
+docker
+```
+
+Now we can use:
+
+```bash
+docker ps
+```
+
+instead of:
+
+```bash
+sudo docker ps
+```
+
+---
+
+# 8. Pull image from Docker Hub
+
+Use the image created in Phase 4:
+
+```bash
+docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+Example:
+
+```bash
+docker pull swayam248/containerized-fastapi-cicd:latest
+```
+
+Verify:
+
+```bash
+docker images
+```
+
+The image should now exist locally on EC2.
+
+This proves:
+
+```text
+Docker Hub
+    ↓
+EC2
+```
+
+---
+
+# 9. Run FastAPI on EC2
+
+Run:
+
+```bash
+docker run -d --name phase5-app -p 8000:8000 YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+Example:
+
+```bash
+docker run -d --name phase5-app -p 8000:8000 swayam248/containerized-fastapi-cicd:latest
+```
+
+Meaning:
+
+```text
+-d
+    → detached/background mode
+
+--name phase5-app
+    → container name
+
+-p 8000:8000
+    → EC2 host port 8000 → container port 8000
+```
+
+---
+
+# 10. Verify the container
+
+```bash
+docker ps
+```
+
+Look for:
+
+```text
+0.0.0.0:8000->8000/tcp
+```
+
+Logs:
+
+```bash
+docker logs phase5-app
+```
+
+The logs should show Uvicorn starting.
+
+Test from EC2 itself:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected:
+
+```json
+{"status":"healthy"}
+```
+
+---
+
+# 11. Access application from internet
+
+Find the EC2 Public IPv4 address.
+
+Open:
+
+```text
+http://YOUR_EC2_PUBLIC_IP:8000
+```
+
+Expected:
+
+```json
+{
+  "message": "Welcome to Docker Mastery Project"
+}
+```
+
+Also test:
+
+```text
+http://YOUR_EC2_PUBLIC_IP:8000/health
+http://YOUR_EC2_PUBLIC_IP:8000/info
+http://YOUR_EC2_PUBLIC_IP:8000/docs
+```
+
+Network flow:
+
+```text
+Internet
+    ↓
+EC2 Public IP :8000
+    ↓
+Security Group
+    ↓
+EC2 host :8000
+    ↓
+Docker container :8000
+    ↓
+FastAPI
+```
+
+---
+
+# 12. Public IP vs Private IP
+
+EC2 has private networking inside the AWS VPC.
+
+Private IP:
+
+```text
+Used inside the VPC/internal network
+```
+
+Public IP:
+
+```text
+Used to communicate with the EC2 instance from the internet
+```
+
+---
+
+# 13. Inspect the container
+
+```bash
+docker inspect phase5-app
+```
+
+This provides detailed information about:
+
+- Container
+- Image
+- Network
+- Ports
+- Environment
+- Mounts
+- Configuration
+- Restart policy
+
+---
+
+# 14. Stop and start container
+
+Stop:
+
+```bash
+docker stop phase5-app
+```
+
+Check:
+
+```bash
+docker ps
+```
+
+Check all containers:
+
+```bash
+docker ps -a
+```
+
+Start:
+
+```bash
+docker start phase5-app
+```
+
+Verify:
+
+```bash
+docker ps
+```
+
+Test:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Important:
+
+```text
+docker stop
+    ↓
+Stops an existing container
+
+docker start
+    ↓
+Starts that same container
+```
+
+---
+
+# 15. Configure restart policy
+
+Remove old container:
+
+```bash
+docker rm -f phase5-app
+```
+
+Create it again:
+
+```bash
+docker run -d \
+  --name phase5-app \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+Example:
+
+```bash
+docker run -d \
+  --name phase5-app \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  swayam248/containerized-fastapi-cicd:latest
+```
+
+`--restart unless-stopped` tells Docker to attempt to restart the container after Docker/host restarts or unexpected failures unless it was explicitly stopped.
+
+Verify:
+
+```bash
+docker ps
+```
+
+Then:
+
+```bash
+docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' phase5-app
+```
+
+Expected:
+
+```text
+unless-stopped
+```
+
+---
+
+# 16. Important deployment concept — new versions
+
+Suppose we change the application.
+
+```text
+Developer
+    ↓
+git commit
+    ↓
 git push
-    |
-    v
+    ↓
 GitHub Actions
-    |
-    +--> lint-and-test
-    |       |
-    |       +--> Flake8    PASS
-    |       +--> Pytest    PASS
-    |
-    v
-build-image
-    |
-    +--> Docker Buildx
-    +--> Docker image build
-    |
-    v
-GREEN CHECK
+    ↓
+Flake8 + pytest
+    ↓
+Docker build
+    ↓
+Docker push
+    ↓
+Docker Hub
+    ↓
+NEW IMAGE
+```
+
+EC2 does NOT automatically replace its running container.
+
+We need:
+
+```bash
+docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+Then recreate/restart the container using the new image.
+
+This is why Phase 5 is a manual deployment.
+
+Later phases will introduce managed/automated deployment.
+
+---
+
+# 17. Important `latest` concept
+
+We currently use:
+
+```text
+containerized-fastapi-cicd:latest
+```
+
+If:
+
+```text
+latest → Version 1
+```
+
+and later:
+
+```text
+latest → Version 2
+```
+
+an existing running container does not magically become Version 2.
+
+The deployment process must:
+
+```text
+Pull new image
+    ↓
+Stop/remove old container
+    ↓
+Start new container
+```
+
+Later we will learn better versioning strategies.
+
+---
+
+# Phase 5 final architecture
+
+```text
+                         INTERNET
+                            |
+                            | HTTP :8000
+                            v
+                 +----------------------+
+                 |       AWS EC2        |
+                 |                      |
+                 |   Security Group     |
+                 |     Port 8000        |
+                 +----------+-----------+
+                            |
+                            v
+                 +----------------------+
+                 |   Docker Container   |
+                 |                      |
+                 |      FastAPI         |
+                 |      Port 8000       |
+                 +----------+-----------+
+                            ^
+                            |
+                       docker pull
+                            |
+                 +----------+-----------+
+                 |      Docker Hub      |
+                 |                      |
+                 | containerized-       |
+                 | fastapi-cicd:latest  |
+                 +----------+-----------+
+                            ^
+                            |
+                       docker push
+                            |
+                 +----------+-----------+
+                 |    GitHub Actions    |
+                 |                      |
+                 | Flake8 + pytest      |
+                 |       ↓              |
+                 | Docker build         |
+                 |       ↓              |
+                 | Docker push          |
+                 +----------+-----------+
+                            ^
+                            |
+                         git push
+                            |
+                      +-----+-----+
+                      | Developer |
+                      +-----------+
 ```
 
 ---
 
-# Phase 3 — Interview Cheat Sheet
+# Phase 5 — Useful command reference
 
-## What did you improve in Phase 3?
+## Windows / SSH
 
-### Interview Answer
-
-> I hardened the Docker container and made it more production-oriented. I moved from `python:3.12-slim` to `python:3.12-alpine`, kept the multi-stage build so the final image contains only runtime requirements, created a dedicated non-root `appuser`, and added a Docker `HEALTHCHECK` that calls the FastAPI `/health` endpoint. I also created a separate GitHub Actions workflow for Phase 3 that runs Flake8 and pytest before building the Docker image. The `build-image` job depends on `lint-and-test`, so a failed quality check prevents the Docker image from being built.
-
----
-
-## Important Terms
-
-### Alpine
-
-A lightweight Linux distribution commonly used for containers.
-
-### Multi-stage Build
-
-Uses separate build and final stages so build-only dependencies do not need to remain in the final runtime image.
-
-### Non-root Container
-
-Runs the application with reduced privileges.
-
-### HEALTHCHECK
-
-Provides Docker with a mechanism to determine whether the application is healthy.
-
-### Build Context
-
-The directory whose files are available to Docker during a build.
-
-For Phase 3:
-
-```yaml
-context: ./phase-3
+```powershell
+cd C:\path\to\key
+dir
+ssh -i "docker-project-key.pem" ubuntu@YOUR_EC2_PUBLIC_IP
 ```
 
-### Buildx
+## Ubuntu preparation
 
-Docker's modern build system used by Docker build actions.
+```bash
+sudo apt update
+sudo apt upgrade -y
+lsb_release -a
+```
 
-### CI
+## Docker
 
-Continuous Integration. Code is automatically checked when changes are pushed.
+```bash
+sudo apt install docker.io -y
+docker --version
+sudo systemctl status docker
+sudo systemctl enable docker
+sudo docker run hello-world
+```
 
-### Flake8
+## Docker permissions
 
-Python linting tool.
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+docker ps
+groups
+```
 
-### pytest
+## Pull image
 
-Python testing framework.
+```bash
+docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+docker images
+```
 
-### `needs`
+## Run
 
-A GitHub Actions keyword used to make one job depend on another job.
+```bash
+docker run -d --name phase5-app -p 8000:8000 YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+## Verify
+
+```bash
+docker ps
+docker logs phase5-app
+curl http://localhost:8000/health
+```
+
+## Inspect
+
+```bash
+docker inspect phase5-app
+```
+
+## Stop/start
+
+```bash
+docker stop phase5-app
+docker ps
+docker ps -a
+docker start phase5-app
+docker ps
+```
+
+## Restart policy
+
+```bash
+docker rm -f phase5-app
+
+docker run -d \
+  --name phase5-app \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+
+docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' phase5-app
+```
 
 ---
 
-# Running the Project Again After Shutdown
+# Phase 5 troubleshooting
 
-## 1. Start Docker Desktop
+## SSH fails
 
-Start Docker Desktop before running Docker commands.
+Check:
+
+- EC2 is running
+- Correct Public IPv4
+- Correct `.pem`
+- Username is `ubuntu`
+- Security Group allows port 22
+- If using `My IP`, your current public IP is correct
+
+## Application does not open
+
+Run:
+
+```bash
+docker ps
+docker logs phase5-app
+curl http://localhost:8000/health
+```
+
+If localhost works but the browser does not, check the Security Group port 8000 rule.
+
+## Docker permission denied
+
+Run:
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+docker ps
+```
+
+## Image not found
+
+Check:
+
+```bash
+docker images
+```
+
+Then:
+
+```bash
+docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+## Container exits
+
+Run:
+
+```bash
+docker ps -a
+docker logs phase5-app
+```
+
+The logs normally reveal the startup problem.
+
+## Port 8000 already in use
+
+Check:
+
+```bash
+docker ps
+```
+
+If an old container owns the port:
+
+```bash
+docker rm -f phase5-app
+```
+
+Then recreate it.
 
 ---
 
-## 2. Open the Project
+# Phase 5 interview questions
+
+## What is AWS EC2?
+
+EC2 is AWS's service for provisioning and running virtual servers in the cloud.
+
+## What is an EC2 instance?
+
+A virtual machine running in AWS with compute, memory, storage and networking resources.
+
+## What is an AMI?
+
+An AMI is a template used to launch EC2 instances. It contains the operating system and configuration required to create the server.
+
+## What is a Security Group?
+
+A Security Group is a stateful virtual firewall associated with AWS resources such as EC2. It controls allowed network traffic using rules.
+
+## Why port 22?
+
+Port 22 is the standard SSH port used to remotely connect to the Linux server.
+
+## Why port 8000?
+
+Our FastAPI application listens on port 8000.
+
+## What is SSH?
+
+SSH is a secure protocol used to remotely access and administer Linux servers.
+
+## Public IP vs private IP?
+
+Private IP is used inside the VPC/internal AWS network. Public IP enables communication with the internet.
+
+## Why Docker on EC2?
+
+Docker provides the runtime environment needed to run the containerized FastAPI application.
+
+## Why Docker Hub?
+
+Docker Hub is the container registry used to store and distribute the image created by CI.
+
+## Why not clone GitHub on EC2?
+
+We separate source/build from runtime. GitHub Actions builds and tests the artifact, Docker Hub stores it, and EC2 pulls and runs that artifact.
+
+## Why not build on EC2?
+
+Building in CI and deploying the resulting artifact gives a more consistent deployment and separates build and runtime responsibilities.
+
+## What does `-p 8000:8000` mean?
+
+It maps port 8000 on the EC2 host to port 8000 inside the Docker container.
+
+## What does `-d` mean?
+
+It runs the container in detached/background mode.
+
+## What does `--restart unless-stopped` mean?
+
+It tells Docker to automatically restart the container after Docker/host restarts or unexpected failures unless the container was explicitly stopped.
+
+## Does `docker pull` update a running container?
+
+No. It downloads the image but does not replace the already-running container. The container must be recreated using the new image.
+
+## Is Phase 5 production-ready?
+
+Not fully. It is a learning deployment.
+
+A production architecture would normally add:
+
+- HTTPS
+- Load balancer/reverse proxy
+- More restrictive network rules
+- Monitoring
+- Centralized logging
+- Automated deployment
+- Image versioning
+- Secrets management
+- High availability
+- Auto scaling
+
+---
+
+# Phase comparison
+
+| Feature | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 |
+|---|---|---|---|---|---|
+| FastAPI | Yes | Yes | Yes | Yes | Yes |
+| Docker | Yes | Yes | Yes | Yes | Yes |
+| Base image | Ubuntu | Python Slim | Python Alpine | Python Alpine | Python Alpine |
+| Multi-stage | No | Yes | Yes | Yes | Yes |
+| pytest | No | Yes | Yes | Yes | Yes |
+| Flake8 | No | Yes | Yes | Yes | Yes |
+| Git/GitHub | No | Yes | Yes | Yes | Yes |
+| GitHub Actions | No | Yes | Yes | Yes | Yes |
+| Buildx | No | Yes | Yes | Yes | Yes |
+| Non-root user | No | No | Yes | Yes | Yes |
+| HEALTHCHECK | No | No | Yes | Yes | Yes |
+| Docker Hub | No | No | No | Yes | Yes |
+| AWS EC2 | No | No | No | No | Yes |
+| Cloud deployment | No | No | No | No | Yes |
+| Restart policy | No | No | No | No | Yes |
+
+---
+
+# Project evolution
+
+## Phase 1
+
+```text
+FastAPI
+   ↓
+Docker image
+   ↓
+Container
+```
+
+## Phase 2
+
+```text
+FastAPI
+   ↓
+Tests + Linting
+   ↓
+Multi-stage Docker image
+   ↓
+GitHub Actions CI
+```
+
+## Phase 3
+
+```text
+FastAPI
+   ↓
+Tests + Linting
+   ↓
+Hardened Docker image
+   ├── Alpine
+   ├── Multi-stage
+   ├── Non-root user
+   └── HEALTHCHECK
+   ↓
+GitHub Actions CI
+```
+
+## Phase 4
+
+```text
+FastAPI
+   ↓
+Tests + Linting
+   ↓
+Docker Build
+   ↓
+Docker Hub
+```
+
+## Phase 5
+
+```text
+FastAPI
+   ↓
+Tests + Linting
+   ↓
+Docker Build
+   ↓
+Docker Hub
+   ↓
+EC2
+   ↓
+Docker Container
+   ↓
+Internet
+```
+
+---
+
+# Running the project again after shutdown
+
+## Local Docker environment
+
+Start Docker Desktop.
 
 Open:
 
@@ -3607,190 +2932,110 @@ docker-project
 
 in VS Code.
 
----
-
-## 3. Check Git
-
-From `docker-project`:
+Check:
 
 ```powershell
 git status
-```
-
----
-
-## 4. Start Phase-3 Container If It Already Exists
-
-Check:
-
-```powershell
 docker ps -a
 ```
 
-If `phase3-app` exists but is stopped:
+If the Phase 3 container already exists:
 
 ```powershell
 docker start phase3-app
-```
-
-Check:
-
-```powershell
 docker ps
 ```
 
----
-
-## 5. If `phase3-app` Does Not Exist
-
-Go to:
-
-```text
-phase-3
-```
-
-Build:
+If it does not exist:
 
 ```powershell
+cd phase-3
 docker build -t docker-mastery:phase3 .
-```
-
-Run:
-
-```powershell
 docker run -d --name phase3-app -p 8000:8000 docker-mastery:phase3
-```
-
----
-
-## 6. Check the Container
-
-Run:
-
-```powershell
 docker ps
-```
-
-Check logs:
-
-```powershell
 docker logs phase3-app
 ```
 
-The container should eventually become:
+## EC2 deployment
+
+If the EC2 instance was stopped rather than terminated:
+
+1. Start the EC2 instance.
+2. Get its current Public IPv4 address.
+3. SSH into it.
+4. Check Docker:
+
+```bash
+docker ps
+```
+
+5. If the container exists:
+
+```bash
+docker start phase5-app
+```
+
+6. Check:
+
+```bash
+docker ps
+curl http://localhost:8000/health
+```
+
+If the container does not exist:
+
+```bash
+docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+
+docker run -d \
+  --name phase5-app \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+```
+
+Then access:
 
 ```text
-healthy
+http://YOUR_EC2_PUBLIC_IP:8000
 ```
+
+Important: an EC2 instance's public IPv4 address can change after stopping/starting unless an Elastic IP or another stable addressing mechanism is used.
 
 ---
 
-## 7. Python Development
+# Phase 5 completion checklist
 
-Go to:
+## AWS
 
-```text
-phase-3
-```
+- [x] EC2 instance created
+- [x] Ubuntu AMI selected
+- [x] Key pair created
+- [x] Security Group configured
+- [x] SSH port 22 configured
+- [x] FastAPI port 8000 configured
 
-Activate the virtual environment:
+## Server
 
-```powershell
-.\venv\Scripts\Activate.ps1
-```
+- [x] Connected using SSH
+- [x] Ubuntu packages updated
+- [x] Docker installed
+- [x] Docker service verified
+- [x] Docker enabled at boot
+- [x] Docker `hello-world` tested
+- [x] `ubuntu` user configured for Docker
 
-If the virtual environment does not exist:
+## Deployment
 
-```powershell
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements-dev.txt
-```
-
----
-
-## 8. When Finished for the Day
-
-Stop the container:
-
-```powershell
-docker stop phase3-app
-```
-
-You can shut down the laptop after the container has been stopped.
-
----
-
-# Final Phase Comparison
-
-| Feature | Phase 1 | Phase 2 | Phase 3 |
-|---|---|---|---|
-| Base image | Ubuntu | `python:3.12-slim` | `python:3.12-alpine` |
-| Python | Installed manually | Included in base image | Included in base image |
-| Multi-stage build | No | Yes | Yes |
-| Automated tests | No | pytest | pytest |
-| Linting | No | Flake8 | Flake8 |
-| `.dockerignore` | Basic | Yes | Yes |
-| Non-root user | No | No | Yes |
-| HEALTHCHECK | No | No | Yes |
-| Git/GitHub | No | Yes | Yes |
-| GitHub Actions | No | Yes | Yes |
-| Docker Buildx in CI | No | Yes | Yes |
-| Container hardening | Basic | Improved | Further improved |
-
----
-
-# Project Evolution
-
-## Phase 1
-
-```text
-FastAPI application
-        |
-        v
-Docker image
-        |
-        v
-Container
-```
-
-## Phase 2
-
-```text
-FastAPI application
-        |
-        v
-Tests + Linting
-        |
-        v
-Multi-stage Docker image
-        |
-        v
-GitHub Actions CI
-```
-
-## Phase 3
-
-```text
-FastAPI application
-        |
-        v
-Tests + Linting
-        |
-        v
-Hardened Docker image
-        |
-        +--> Alpine
-        +--> Multi-stage build
-        +--> Non-root user
-        +--> HEALTHCHECK
-        |
-        v
-GitHub Actions CI
-        |
-        v
-Docker Build
-```
+- [x] Docker image pulled from Docker Hub
+- [x] Container started
+- [x] Port 8000 mapped
+- [x] Container logs checked
+- [x] `/health` verified
+- [x] Application accessed through EC2 public IP
+- [x] Stop/start tested
+- [x] Restart policy configured
+- [x] Restart policy verified
 
 ---
 
@@ -3798,1365 +3043,64 @@ Docker Build
 
 - Phase 1: Complete
 - Phase 2: Complete
-- Phase 3: Complete
 - Phase 2 CI: Complete
+- Phase 3: Complete
 - Phase 3 CI: Green
+- Phase 4: Complete
+- Phase 5: Complete
 
 ---
 
-# Phase 4 — GitHub Actions → Docker Hub
-
-Phase 4 takes the CI pipeline from Phase 3 one step further.
-
-In Phase 3, GitHub Actions:
-
-    git push
-        ↓
-    GitHub Actions
-        ↓
-    Flake8
-        ↓
-    pytest
-        ↓
-    Docker build
-        ↓
-    PASS
-
-The Docker image was built inside the GitHub Actions runner, but it was not pushed anywhere.
-
-In Phase 4, we will automatically push the Docker image to Docker Hub.
-
-The new flow will be:
-
-    git push
-        ↓
-    GitHub
-        ↓
-    GitHub Actions
-        ↓
-    Flake8
-        ↓
-    pytest
-        ↓
-    Docker build
-        ↓
-    Docker Hub login
-        ↓
-    Push Docker image
-        ↓
-    Docker Hub
-
-This means that after a successful code push, a ready-to-use Docker image will automatically be available from Docker Hub.
-
-
-------------------------------------------------------------
-## 1. What We Are Adding
-
-Phase 4 introduces:
-
-    GitHub Actions
-          ↓
-    Docker Hub
-
-We already have:
-
-    GitHub Actions
-          ↓
-    Test
-          ↓
-    Build Docker image
-
-Now we are adding:
-
-    Docker Hub authentication
-          ↓
-    Push Docker image
-
-
-The important difference is:
-
-Phase 3:
-
-    push: false
-
-Phase 4:
-
-    push: true
-
-
-In Phase 3, the image was only built.
-
-In Phase 4, the image will also be published to Docker Hub.
-
-
-------------------------------------------------------------
-## 2. Create a Docker Hub Repository
-
-Create or log in to your Docker Hub account.
-
-Create a new repository named:
-
-    containerized-fastapi-cicd
-
-For this project, make the repository Public.
-
-The final image will look like:
-
-    YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
-
-For example:
-
-    swayam123/containerized-fastapi-cicd:latest
-
-Replace `swayam123` with your Docker Hub username.
-
-
-### What are we doing?
-
-Docker Hub is a container registry.
-
-A container registry stores Docker images so that they can later be downloaded and run on another machine.
-
-Previously:
-
-    Docker image
-         ↓
-    GitHub Actions runner
-
-
-Now:
-
-    Docker image
-         ↓
-    Docker Hub
-         ↓
-    Other machines can pull the image
-
-
-Later in this project, AWS EC2, ECS and Kubernetes will be able to use images from a container registry.
-
-
-------------------------------------------------------------
-## 3. Create a Docker Hub Access Token
-
-We should not put the Docker Hub password directly inside GitHub Actions.
-
-Instead, create a Docker Hub Access Token.
-
-In Docker Hub, go to the account settings and find:
-
-    Personal access tokens
-
-Create a new token.
-
-Use a name such as:
-
-    github-actions-containerized-fastapi
-
-Give the token permission to push images to the repository.
-
-Generate the token.
-
-Copy the token and keep it somewhere secure.
-
-### Important
-
-Do NOT put the token inside:
-
-    phase4-ci-cd.yml
-
-or:
-
-    README.md
-
-or:
-
-    source code
-
-or:
-
-    Git commits
-
-
-The token should be stored as a GitHub Secret.
-
-
-------------------------------------------------------------
-## 4. Create GitHub Secrets
-
-Go to the GitHub repository:
-
-    containerized-fastapi-cicd
+# What comes next?
+
+## Phase 6 — AWS ECR + ECS
+
+We will move from:
+
+```text
+Docker Hub
+    ↓
+EC2
+    ↓
+docker run
+```
+
+towards:
+
+```text
+Docker Image
+    ↓
+Amazon ECR
+    ↓
+Amazon ECS
+    ↓
+ECS Task
+    ↓
+ECS Service
+    ↓
+Running container
+```
+
+This will introduce:
+
+- Amazon ECR
+- Amazon ECS
+- ECS task definitions
+- ECS services
+- IAM roles
+- AWS networking
+- Managed container deployment
+- Service desired count
+- Container orchestration
 
 Then:
 
-    Settings
-        ↓
-    Secrets and variables
-        ↓
-    Actions
-        ↓
-    New repository secret
-
-
-We need two secrets.
-
-
-### Secret 1
-
-Name:
-
-    DOCKERHUB_USERNAME
-
-Value:
-
-    Your Docker Hub username
-
-
-### Secret 2
-
-Name:
-
-    DOCKERHUB_TOKEN
-
-Value:
-
-    The Docker Hub access token created in the previous step.
-
-
-After creating them, GitHub will securely store:
-
-    DOCKERHUB_USERNAME
-    DOCKERHUB_TOKEN
-
-
-### What are we doing?
-
-We need Docker Hub credentials so GitHub Actions can authenticate with Docker Hub.
-
-Instead of writing:
-
-    username: myusername
-    password: mypassword
-
-inside the workflow, we use:
-
-    ${{ secrets.DOCKERHUB_USERNAME }}
-
-and:
-
-    ${{ secrets.DOCKERHUB_TOKEN }}
-
-
-This keeps the actual credentials outside the source code.
-
-
-------------------------------------------------------------
-## 5. Check the Project Status
-
-### Location
-
-    docker-project
-
-
-Run:
-
-    git status
-
-
-We should start Phase 4 with a clean repository.
-
-Expected:
-
-    On branch main
-    Your branch is up to date with 'origin/main'
-
-    nothing to commit, working tree clean
-
-
-If Phase 3 has already been completed and pushed, we can continue.
-
-
-------------------------------------------------------------
-## 6. Create the Phase-4 Workflow
-
-### Location
-
-    docker-project
-
-
-The `.github` directory already exists because we created it during Phase 3.
-
-Inside `.github\workflows`, create:
-
-    phase4-ci-cd.yml
-
-
-If you need to create the file from PowerShell:
-
-    New-Item .github\workflows\phase4-ci-cd.yml -ItemType File
-
-
-The structure should now be:
-
-    docker-project/
-    │
-    ├── .github/
-    │   └── workflows/
-    │       ├── ci.yml
-    │       ├── phase3-ci.yml
-    │       └── phase4-ci-cd.yml
-    │
-    ├── phase-1/
-    ├── phase-2/
-    └── phase-3/
-
-
-We are keeping the previous workflows because each phase demonstrates a different stage of the project.
-
-
-------------------------------------------------------------
-## 7. Create `phase4-ci-cd.yml`
-
-### Location
-
-    docker-project\.github\workflows
-
-
-Open:
-
-    phase4-ci-cd.yml
-
-
-Add:
-
-    name: Phase 4 - CI/CD to Docker Hub
-
-    on:
-      push:
-        branches:
-          - main
-        paths:
-          - "phase-3/**"
-          - ".github/workflows/phase4-ci-cd.yml"
-
-      pull_request:
-        branches:
-          - main
-        paths:
-          - "phase-3/**"
-
-    jobs:
-
-      # =========================
-      # Job 1: Lint and Test
-      # =========================
-      lint-and-test:
-        runs-on: ubuntu-latest
-
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v4
-
-          - name: Set up Python
-            uses: actions/setup-python@v5
-            with:
-              python-version: "3.12"
-
-          - name: Install dependencies
-            run: |
-              python -m pip install --upgrade pip
-              pip install -r phase-3/requirements-dev.txt
-
-          - name: Run Flake8
-            run: |
-              flake8 phase-3/app phase-3/test_main.py --max-line-length=100
-
-          - name: Run tests
-            run: |
-              pytest -v phase-3/test_main.py
-
-
-      # =========================
-      # Job 2: Build and Push
-      # =========================
-      build-and-push:
-        runs-on: ubuntu-latest
-        needs: lint-and-test
-
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v4
-
-          - name: Log in to Docker Hub
-            uses: docker/login-action@v3
-            with:
-              username: ${{ secrets.DOCKERHUB_USERNAME }}
-              password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-          - name: Set up Docker Buildx
-            uses: docker/setup-buildx-action@v3
-
-          - name: Build and push Docker image
-            uses: docker/build-push-action@v6
-            with:
-              context: ./phase-3
-              file: ./phase-3/Dockerfile
-              push: true
-              tags: ${{ secrets.DOCKERHUB_USERNAME }}/containerized-fastapi-cicd:latest
-
-
-------------------------------------------------------------
-## 8. Understand the Phase-4 Workflow
-
-The workflow has two jobs:
-
-    lint-and-test
-
-and:
-
-    build-and-push
-
-
-The flow is:
-
-    lint-and-test
-          |
-          | SUCCESS
-          v
-    build-and-push
-
-
-The important part is:
-
-    needs: lint-and-test
-
-
-This means the `build-and-push` job depends on the `lint-and-test` job.
-
-
-If Flake8 fails:
-
-    lint-and-test
-          |
-          X
-        FAIL
-          |
-          X
-    build-and-push
-      DOES NOT RUN
-
-
-If pytest fails:
-
-    lint-and-test
-          |
-          X
-        FAIL
-          |
-          X
-    build-and-push
-      DOES NOT RUN
-
-
-Only when everything passes:
-
-    Flake8     PASS
-    pytest     PASS
-        |
-        v
-    build-and-push
-
-
-This prevents us from publishing an image when the code has failed our quality checks.
-
-
-------------------------------------------------------------
-## 9. Understand the Workflow Trigger
-
-The workflow contains:
-
-    on:
-      push:
-        branches:
-          - main
-
-
-This means the workflow runs when changes are pushed to the `main` branch.
-
-
-We also have:
-
-    paths:
-      - "phase-3/**"
-      - ".github/workflows/phase4-ci-cd.yml"
-
-
-This means the workflow is concerned with:
-
-    phase-3/**
-
-and:
-
-    .github/workflows/phase4-ci-cd.yml
-
-
-For example, changing:
-
-    phase-3/app/main.py
-
-can trigger the workflow.
-
-Changing an unrelated file outside these paths will not normally trigger this workflow.
-
-
-------------------------------------------------------------
-## 10. Understand `lint-and-test`
-
-The first job is:
-
-    lint-and-test:
-
-
-It runs on:
-
-    ubuntu-latest
-
-
-GitHub provides a temporary Ubuntu runner to execute this job.
-
-
-The steps are:
-
-    Checkout code
-          ↓
-    Setup Python
-          ↓
-    Install dependencies
-          ↓
-    Flake8
-          ↓
-    pytest
-
-
-This is the Continuous Integration part of our pipeline.
-
-
-------------------------------------------------------------
-## 11. Checkout the Code
-
-The workflow contains:
-
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-
-This downloads/checks out the repository code onto the GitHub Actions runner.
-
-Without this step, the runner would not have access to our project files.
-
-
-The flow is:
-
-    GitHub Repository
-          ↓
-    actions/checkout
-          ↓
-    GitHub Actions Runner
-          ↓
-    Project files available
-
-
-------------------------------------------------------------
-## 12. Set Up Python
-
-The workflow contains:
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
-
-
-This configures Python 3.12 on the GitHub Actions runner.
-
-This matches the Python version we have been using throughout the project.
-
-
-------------------------------------------------------------
-## 13. Install Dependencies
-
-The workflow runs:
-
-    python -m pip install --upgrade pip
-    pip install -r phase-3/requirements-dev.txt
-
-
-Our `requirements-dev.txt` contains:
-
-    -r requirements.txt
-    pytest
-    httpx
-    flake8
-
-
-Therefore GitHub Actions installs:
-
-    FastAPI
-    Uvicorn
-    pytest
-    httpx
-    Flake8
-
-
-------------------------------------------------------------
-## 14. Run Flake8
-
-The workflow runs:
-
-    flake8 phase-3/app phase-3/test_main.py --max-line-length=100
-
-
-This checks our Python code for linting/style problems.
-
-
-If Flake8 fails:
-
-    lint-and-test
-          |
-          X
-        FAIL
-
-
-The next job will not run.
-
-
-------------------------------------------------------------
-## 15. Run pytest
-
-The workflow runs:
-
-    pytest -v phase-3/test_main.py
-
-
-This executes the automated tests we created in Phase 3.
-
-
-Expected result:
-
-    3 passed
-
-
-If the tests pass:
-
-    pytest
-      |
-      v
-    SUCCESS
-
-
-If the tests fail:
-
-    pytest
-      |
-      X
-    FAIL
-
-
-The Docker image will not be pushed.
-
-
-------------------------------------------------------------
-## 16. Docker Hub Login
-
-The second job contains:
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-
-This logs GitHub Actions into Docker Hub.
-
-
-The credentials come from:
-
-    GitHub Secrets
-
-
-We are NOT writing the actual username or token in the workflow.
-
-
-The flow is:
-
-    GitHub Secrets
-          ↓
-    docker/login-action
-          ↓
-    Docker Hub authentication
-
-
-------------------------------------------------------------
-## 17. Set Up Docker Buildx
-
-The workflow contains:
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-
-Buildx is Docker's modern build system.
-
-We use it here so GitHub Actions can perform the Docker image build using the Docker build-push action.
-
-
-------------------------------------------------------------
-## 18. Build and Push the Docker Image
-
-The workflow contains:
-
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v6
-      with:
-        context: ./phase-3
-        file: ./phase-3/Dockerfile
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/containerized-fastapi-cicd:latest
-
-
-This is the most important new part of Phase 4.
-
-
-------------------------------------------------------------
-## 19. Understand `context`
-
-We have:
-
-    context: ./phase-3
-
-
-This tells Docker that:
-
-    phase-3/
-
-is the Docker build context.
-
-
-This is the same concept as when we previously ran:
-
-    cd phase-3
-
-    docker build -t docker-mastery:phase3 .
-
-
-The Dockerfile is:
-
-    ./phase-3/Dockerfile
-
-
-Therefore:
-
-    context: ./phase-3
-    file: ./phase-3/Dockerfile
-
-
-means:
-
-    phase-3/
-        |
-        +--> Docker build context
-        |
-        +--> Dockerfile
-        |
-        +--> app/
-        |
-        +--> requirements.txt
-
-
-------------------------------------------------------------
-## 20. Understand `push: true`
-
-In Phase 3 we used:
-
-    push: false
-
-
-This meant:
-
-    Docker build
-         ↓
-    Docker image created
-         ↓
-    Image stays on GitHub Actions runner
-
-
-In Phase 4 we use:
-
-    push: true
-
-
-Now:
-
-    Docker build
-         ↓
-    Docker image
-         ↓
-    Push to Docker Hub
-
-
-This is the main difference between the Phase-3 and Phase-4 Docker workflow.
-
-
-------------------------------------------------------------
-## 21. Understand the Docker Image Tag
-
-We use:
-
-    tags: ${{ secrets.DOCKERHUB_USERNAME }}/containerized-fastapi-cicd:latest
-
-
-Suppose the Docker Hub username is:
-
-    swayam123
-
-
-Then the resulting image name becomes:
-
-    swayam123/containerized-fastapi-cicd:latest
-
-
-The format is:
-
-    USERNAME/REPOSITORY:TAG
-
-
-So:
-
-    swayam123
-        |
-        +--> Docker Hub username
-
-    containerized-fastapi-cicd
-        |
-        +--> Docker Hub repository
-
-    latest
-        |
-        +--> Image tag
-
-
-------------------------------------------------------------
-## 22. Why `latest`?
-
-`latest` is a Docker image tag.
-
-Our image is therefore:
-
-    containerized-fastapi-cicd:latest
-
-
-Whenever this workflow successfully pushes a new image, the `latest` tag will point to the newly pushed image.
-
-
-Later, when we start deploying to AWS and Kubernetes, we will learn better image versioning strategies such as:
-
-    version tags
-    Git commit SHA
-    release tags
-
-
-For now, `latest` keeps the Phase-4 workflow simple.
-
-
-------------------------------------------------------------
-## 23. Check the Workflow Before Committing
-
-From:
-
-    docker-project
-
-
-Run:
-
-    git status
-
-
-The new workflow should appear.
-
-
-Then inspect it:
-
-    Get-Content .github\workflows\phase4-ci-cd.yml
-
-
-Make sure the file contains:
-
-    ${{ secrets.DOCKERHUB_USERNAME }}
-
-and:
-
-    ${{ secrets.DOCKERHUB_TOKEN }}
-
-
-There should NOT be an actual Docker Hub token in this file.
-
-
-------------------------------------------------------------
-## 24. Commit Phase 4
-
-### Location
-
-    docker-project
-
-
-Stage the workflow:
-
-    git add .github/workflows/phase4-ci-cd.yml
-
-
-Check:
-
-    git status
-
-
-Commit:
-
-    git commit -m "Add Phase 4 Docker Hub CI/CD"
-
-
-Push:
-
-    git push
-
-
-------------------------------------------------------------
-## 25. Check GitHub Actions
-
-Open the GitHub repository.
-
-Go to:
-
-    Actions
-
-
-You should see:
-
-    Phase 4 - CI/CD to Docker Hub
-
-
-Open the workflow run.
-
-
-The expected flow is:
-
-    lint-and-test
-          |
-          +--> Checkout
-          +--> Python 3.12
-          +--> Install dependencies
-          +--> Flake8
-          +--> pytest
-          |
-          | SUCCESS
-          v
-    build-and-push
-          |
-          +--> Docker Login
-          +--> Docker Buildx
-          +--> Docker Build
-          +--> Docker Push
-          |
-          v
-        PASS
-
-
-A successful workflow should show a green check mark.
-
-
-------------------------------------------------------------
-## 26. Check Docker Hub
-
-After GitHub Actions finishes successfully, open Docker Hub.
-
-Open:
-
-    containerized-fastapi-cicd
-
-
-You should see an image/tag:
-
-    latest
-
-
-The important point is that we did not manually build and push this image.
-
-GitHub Actions did it automatically.
-
-
-The flow was:
-
-    git push
-        ↓
-    GitHub Actions
-        ↓
-    Tests
-        ↓
-    Docker build
-        ↓
-    Docker Hub
-        ↓
-    latest
-
-
-------------------------------------------------------------
-## 27. Pull the Image from Docker Hub
-
-Now we verify that the image can actually be downloaded and used.
-
-
-Make sure Docker Desktop is running.
-
-
-From PowerShell:
-
-    docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
-
-
-For example:
-
-    docker pull swayam123/containerized-fastapi-cicd:latest
-
-
-Docker should download the image.
-
-
-Check the local images:
-
-    docker images
-
-
-You should see something similar to:
-
-    YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd
-    latest
-
-
-### What are we proving?
-
-We are proving that the image produced by GitHub Actions is actually available from Docker Hub and can be consumed independently.
-
-
-------------------------------------------------------------
-## 28. Run the Docker Hub Image
-
-Run:
-
-    docker run -d --name phase4-app -p 8000:8000 YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
-
-
-For example:
-
-    docker run -d --name phase4-app -p 8000:8000 swayam123/containerized-fastapi-cicd:latest
-
-
-Check:
-
-    docker ps
-
-
-You should see:
-
-    phase4-app
-
-
-with:
-
-    0.0.0.0:8000->8000/tcp
-
-
-------------------------------------------------------------
-## 29. Check the Container Logs
-
-Run:
-
-    docker logs phase4-app
-
-
-The container should show Uvicorn starting the FastAPI application.
-
-
-The application should be listening on:
-
-    0.0.0.0:8000
-
-
-------------------------------------------------------------
-## 30. Test the Application
-
-Open:
-
-    http://localhost:8000
-
-
-Also test:
-
-    http://localhost:8000/health
-
-
-and:
-
-    http://localhost:8000/info
-
-
-You can also open:
-
-    http://localhost:8000/docs
-
-
-### What are we proving?
-
-The application we are running came from the Docker image stored in Docker Hub.
-
-The complete flow is:
-
-    Source Code
-         ↓
-    GitHub
-         ↓
-    GitHub Actions
-         ↓
-    Docker Image
-         ↓
-    Docker Hub
-         ↓
-    docker pull
-         ↓
-    Docker Container
-         ↓
-    FastAPI Application
-
-
-------------------------------------------------------------
-## 31. Check Container Health
-
-Run:
-
-    docker ps
-
-
-Because we are using the Phase-3 Dockerfile, the container should eventually show:
-
-    Up ... (healthy)
-
-
-The health check from Phase 3 is still being used.
-
-The Phase-4 change is not a new health check.
-
-Phase 4 is taking the already hardened Phase-3 image and automating its delivery to Docker Hub.
-
-
-------------------------------------------------------------
-## 32. Stop the Phase-4 Container
-
-When testing is complete:
-
-    docker stop phase4-app
-
-
-Check:
-
-    docker ps
-
-
-The container will no longer be running.
-
-
-The stopped container still exists.
-
-Check:
-
-    docker ps -a
-
-
-Remove it:
-
-    docker rm phase4-app
-
-
-------------------------------------------------------------
-## 33. Phase-4 Complete Flow
-
-The final Phase-4 flow is:
-
-    Developer
-        |
-        | git push
-        v
-    GitHub
-        |
-        v
-    GitHub Actions
-        |
-        +--> lint-and-test
-        |       |
-        |       +--> Flake8
-        |       |
-        |       +--> pytest
-        |
-        | SUCCESS
-        v
-    build-and-push
-        |
-        +--> Docker Login
-        |
-        +--> Docker Buildx
-        |
-        +--> Docker Build
-        |
-        +--> Docker Push
-        |
-        v
-    Docker Hub
-        |
-        | docker pull
-        v
-    Docker Container
-        |
-        v
-    FastAPI Application
-
-
-------------------------------------------------------------
-## 34. What Changed From Phase 3?
-
-Feature          | Phase 3                  | Phase 4
------------------|--------------------------|----------------------------
-Testing          | pytest                   | pytest
-Linting          | Flake8                   | Flake8
-Docker Build     | Yes                      | Yes
-Docker Push      | No                       | Yes
-Docker Registry  | None                     | Docker Hub
-Authentication   | None                     | GitHub Secrets
-Buildx           | Yes                      | Yes
-CI               | Yes                      | Yes
-Image Delivery   | No                       | Automated
-
-
-Phase 3:
-
-    GitHub Actions
-        |
-        +--> Test
-        +--> Lint
-        +--> Build
-
-
-Phase 4:
-
-    GitHub Actions
-        |
-        +--> Test
-        +--> Lint
-        +--> Build
-        +--> Push to Docker Hub
-
-
-------------------------------------------------------------
-## 35. Phase-4 Completion Checklist
-
-[ ] Docker Hub account created
-
-[ ] Docker Hub repository created
-
-[ ] Repository named `containerized-fastapi-cicd`
-
-[ ] Docker Hub Access Token created
-
-[ ] `DOCKERHUB_USERNAME` added to GitHub Secrets
-
-[ ] `DOCKERHUB_TOKEN` added to GitHub Secrets
-
-[ ] `.github\workflows\phase4-ci-cd.yml` created
-
-[ ] Workflow committed
-
-[ ] Workflow pushed to GitHub
-
-[ ] GitHub Actions workflow runs successfully
-
-[ ] Flake8 passes
-
-[ ] pytest passes
-
-[ ] Docker image builds successfully
-
-[ ] Docker image is pushed to Docker Hub
-
-[ ] `latest` tag appears in Docker Hub
-
-[ ] Image can be pulled using `docker pull`
-
-[ ] Image can be run using `docker run`
-
-[ ] FastAPI endpoints work
-
-[ ] Container shows healthy
-
-[ ] Phase-4 container can be stopped and removed
-
-
-------------------------------------------------------------
-# Phase 4 Complete
-
-At the end of Phase 4, our project has moved from simply building Docker images to automatically publishing them.
-
-    Phase 1
-        ↓
-    Basic FastAPI + Docker
-
-        ↓
-
-    Phase 2
-        ↓
-    Testing + Flake8 + Multi-stage Docker + CI
-
-        ↓
-
-    Phase 3
-        ↓
-    Alpine + Non-root User + HEALTHCHECK + CI
-
-        ↓
-
-    Phase 4
-        ↓
-    GitHub Actions + Docker Hub
-        ↓
-    Automated Docker Image Delivery
-
-
-Next:
-
-# Phase 5 — AWS EC2
-
-The next phase will take the Docker image from Docker Hub and deploy it to an AWS EC2 instance.
-
-The architecture will become:
-
-    GitHub
-        ↓
-    GitHub Actions
-        ↓
-    Docker Hub
-        ↓
-    AWS EC2
-        ↓
-    Docker Container
-        ↓
-    FastAPI Application
+```text
+Phase 7 → Kubernetes
+Phase 8 → Terraform
+```
+
+---
 
 # License
 
