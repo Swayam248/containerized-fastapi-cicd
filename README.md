@@ -3804,50 +3804,1359 @@ Docker Build
 
 ---
 
-# What Comes Next?
+# Phase 4 — GitHub Actions → Docker Hub
 
-The next phase should build on the existing Docker and CI foundation rather than repeating the same concepts.
+Phase 4 takes the CI pipeline from Phase 3 one step further.
 
-Possible next topics include:
+In Phase 3, GitHub Actions:
 
-- Docker image tagging strategy
-- Container registry
-- Docker Hub / GitHub Container Registry
-- CI/CD separation
-- Image publishing
-- Environment variables
-- Docker Compose
-- Application configuration
-- Deployment
-- AWS
-- Kubernetes
-- Infrastructure as Code
-- Monitoring and logging
-- Production-grade CI/CD
+    git push
+        ↓
+    GitHub Actions
+        ↓
+    Flake8
+        ↓
+    pytest
+        ↓
+    Docker build
+        ↓
+    PASS
 
-The project can progressively evolve from:
+The Docker image was built inside the GitHub Actions runner, but it was not pushed anywhere.
 
-```text
-Application
-    ↓
-Docker
-    ↓
-Testing + Linting
-    ↓
-CI
-    ↓
-Container Hardening
-    ↓
-Container Registry
-    ↓
-CD
-    ↓
-Cloud Deployment
-    ↓
-Kubernetes
-```
+In Phase 4, we will automatically push the Docker image to Docker Hub.
 
----
+The new flow will be:
+
+    git push
+        ↓
+    GitHub
+        ↓
+    GitHub Actions
+        ↓
+    Flake8
+        ↓
+    pytest
+        ↓
+    Docker build
+        ↓
+    Docker Hub login
+        ↓
+    Push Docker image
+        ↓
+    Docker Hub
+
+This means that after a successful code push, a ready-to-use Docker image will automatically be available from Docker Hub.
+
+
+------------------------------------------------------------
+## 1. What We Are Adding
+
+Phase 4 introduces:
+
+    GitHub Actions
+          ↓
+    Docker Hub
+
+We already have:
+
+    GitHub Actions
+          ↓
+    Test
+          ↓
+    Build Docker image
+
+Now we are adding:
+
+    Docker Hub authentication
+          ↓
+    Push Docker image
+
+
+The important difference is:
+
+Phase 3:
+
+    push: false
+
+Phase 4:
+
+    push: true
+
+
+In Phase 3, the image was only built.
+
+In Phase 4, the image will also be published to Docker Hub.
+
+
+------------------------------------------------------------
+## 2. Create a Docker Hub Repository
+
+Create or log in to your Docker Hub account.
+
+Create a new repository named:
+
+    containerized-fastapi-cicd
+
+For this project, make the repository Public.
+
+The final image will look like:
+
+    YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+
+For example:
+
+    swayam123/containerized-fastapi-cicd:latest
+
+Replace `swayam123` with your Docker Hub username.
+
+
+### What are we doing?
+
+Docker Hub is a container registry.
+
+A container registry stores Docker images so that they can later be downloaded and run on another machine.
+
+Previously:
+
+    Docker image
+         ↓
+    GitHub Actions runner
+
+
+Now:
+
+    Docker image
+         ↓
+    Docker Hub
+         ↓
+    Other machines can pull the image
+
+
+Later in this project, AWS EC2, ECS and Kubernetes will be able to use images from a container registry.
+
+
+------------------------------------------------------------
+## 3. Create a Docker Hub Access Token
+
+We should not put the Docker Hub password directly inside GitHub Actions.
+
+Instead, create a Docker Hub Access Token.
+
+In Docker Hub, go to the account settings and find:
+
+    Personal access tokens
+
+Create a new token.
+
+Use a name such as:
+
+    github-actions-containerized-fastapi
+
+Give the token permission to push images to the repository.
+
+Generate the token.
+
+Copy the token and keep it somewhere secure.
+
+### Important
+
+Do NOT put the token inside:
+
+    phase4-ci-cd.yml
+
+or:
+
+    README.md
+
+or:
+
+    source code
+
+or:
+
+    Git commits
+
+
+The token should be stored as a GitHub Secret.
+
+
+------------------------------------------------------------
+## 4. Create GitHub Secrets
+
+Go to the GitHub repository:
+
+    containerized-fastapi-cicd
+
+Then:
+
+    Settings
+        ↓
+    Secrets and variables
+        ↓
+    Actions
+        ↓
+    New repository secret
+
+
+We need two secrets.
+
+
+### Secret 1
+
+Name:
+
+    DOCKERHUB_USERNAME
+
+Value:
+
+    Your Docker Hub username
+
+
+### Secret 2
+
+Name:
+
+    DOCKERHUB_TOKEN
+
+Value:
+
+    The Docker Hub access token created in the previous step.
+
+
+After creating them, GitHub will securely store:
+
+    DOCKERHUB_USERNAME
+    DOCKERHUB_TOKEN
+
+
+### What are we doing?
+
+We need Docker Hub credentials so GitHub Actions can authenticate with Docker Hub.
+
+Instead of writing:
+
+    username: myusername
+    password: mypassword
+
+inside the workflow, we use:
+
+    ${{ secrets.DOCKERHUB_USERNAME }}
+
+and:
+
+    ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+This keeps the actual credentials outside the source code.
+
+
+------------------------------------------------------------
+## 5. Check the Project Status
+
+### Location
+
+    docker-project
+
+
+Run:
+
+    git status
+
+
+We should start Phase 4 with a clean repository.
+
+Expected:
+
+    On branch main
+    Your branch is up to date with 'origin/main'
+
+    nothing to commit, working tree clean
+
+
+If Phase 3 has already been completed and pushed, we can continue.
+
+
+------------------------------------------------------------
+## 6. Create the Phase-4 Workflow
+
+### Location
+
+    docker-project
+
+
+The `.github` directory already exists because we created it during Phase 3.
+
+Inside `.github\workflows`, create:
+
+    phase4-ci-cd.yml
+
+
+If you need to create the file from PowerShell:
+
+    New-Item .github\workflows\phase4-ci-cd.yml -ItemType File
+
+
+The structure should now be:
+
+    docker-project/
+    │
+    ├── .github/
+    │   └── workflows/
+    │       ├── ci.yml
+    │       ├── phase3-ci.yml
+    │       └── phase4-ci-cd.yml
+    │
+    ├── phase-1/
+    ├── phase-2/
+    └── phase-3/
+
+
+We are keeping the previous workflows because each phase demonstrates a different stage of the project.
+
+
+------------------------------------------------------------
+## 7. Create `phase4-ci-cd.yml`
+
+### Location
+
+    docker-project\.github\workflows
+
+
+Open:
+
+    phase4-ci-cd.yml
+
+
+Add:
+
+    name: Phase 4 - CI/CD to Docker Hub
+
+    on:
+      push:
+        branches:
+          - main
+        paths:
+          - "phase-3/**"
+          - ".github/workflows/phase4-ci-cd.yml"
+
+      pull_request:
+        branches:
+          - main
+        paths:
+          - "phase-3/**"
+
+    jobs:
+
+      # =========================
+      # Job 1: Lint and Test
+      # =========================
+      lint-and-test:
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+
+          - name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+              python-version: "3.12"
+
+          - name: Install dependencies
+            run: |
+              python -m pip install --upgrade pip
+              pip install -r phase-3/requirements-dev.txt
+
+          - name: Run Flake8
+            run: |
+              flake8 phase-3/app phase-3/test_main.py --max-line-length=100
+
+          - name: Run tests
+            run: |
+              pytest -v phase-3/test_main.py
+
+
+      # =========================
+      # Job 2: Build and Push
+      # =========================
+      build-and-push:
+        runs-on: ubuntu-latest
+        needs: lint-and-test
+
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+
+          - name: Log in to Docker Hub
+            uses: docker/login-action@v3
+            with:
+              username: ${{ secrets.DOCKERHUB_USERNAME }}
+              password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v3
+
+          - name: Build and push Docker image
+            uses: docker/build-push-action@v6
+            with:
+              context: ./phase-3
+              file: ./phase-3/Dockerfile
+              push: true
+              tags: ${{ secrets.DOCKERHUB_USERNAME }}/containerized-fastapi-cicd:latest
+
+
+------------------------------------------------------------
+## 8. Understand the Phase-4 Workflow
+
+The workflow has two jobs:
+
+    lint-and-test
+
+and:
+
+    build-and-push
+
+
+The flow is:
+
+    lint-and-test
+          |
+          | SUCCESS
+          v
+    build-and-push
+
+
+The important part is:
+
+    needs: lint-and-test
+
+
+This means the `build-and-push` job depends on the `lint-and-test` job.
+
+
+If Flake8 fails:
+
+    lint-and-test
+          |
+          X
+        FAIL
+          |
+          X
+    build-and-push
+      DOES NOT RUN
+
+
+If pytest fails:
+
+    lint-and-test
+          |
+          X
+        FAIL
+          |
+          X
+    build-and-push
+      DOES NOT RUN
+
+
+Only when everything passes:
+
+    Flake8     PASS
+    pytest     PASS
+        |
+        v
+    build-and-push
+
+
+This prevents us from publishing an image when the code has failed our quality checks.
+
+
+------------------------------------------------------------
+## 9. Understand the Workflow Trigger
+
+The workflow contains:
+
+    on:
+      push:
+        branches:
+          - main
+
+
+This means the workflow runs when changes are pushed to the `main` branch.
+
+
+We also have:
+
+    paths:
+      - "phase-3/**"
+      - ".github/workflows/phase4-ci-cd.yml"
+
+
+This means the workflow is concerned with:
+
+    phase-3/**
+
+and:
+
+    .github/workflows/phase4-ci-cd.yml
+
+
+For example, changing:
+
+    phase-3/app/main.py
+
+can trigger the workflow.
+
+Changing an unrelated file outside these paths will not normally trigger this workflow.
+
+
+------------------------------------------------------------
+## 10. Understand `lint-and-test`
+
+The first job is:
+
+    lint-and-test:
+
+
+It runs on:
+
+    ubuntu-latest
+
+
+GitHub provides a temporary Ubuntu runner to execute this job.
+
+
+The steps are:
+
+    Checkout code
+          ↓
+    Setup Python
+          ↓
+    Install dependencies
+          ↓
+    Flake8
+          ↓
+    pytest
+
+
+This is the Continuous Integration part of our pipeline.
+
+
+------------------------------------------------------------
+## 11. Checkout the Code
+
+The workflow contains:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+
+This downloads/checks out the repository code onto the GitHub Actions runner.
+
+Without this step, the runner would not have access to our project files.
+
+
+The flow is:
+
+    GitHub Repository
+          ↓
+    actions/checkout
+          ↓
+    GitHub Actions Runner
+          ↓
+    Project files available
+
+
+------------------------------------------------------------
+## 12. Set Up Python
+
+The workflow contains:
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+
+This configures Python 3.12 on the GitHub Actions runner.
+
+This matches the Python version we have been using throughout the project.
+
+
+------------------------------------------------------------
+## 13. Install Dependencies
+
+The workflow runs:
+
+    python -m pip install --upgrade pip
+    pip install -r phase-3/requirements-dev.txt
+
+
+Our `requirements-dev.txt` contains:
+
+    -r requirements.txt
+    pytest
+    httpx
+    flake8
+
+
+Therefore GitHub Actions installs:
+
+    FastAPI
+    Uvicorn
+    pytest
+    httpx
+    Flake8
+
+
+------------------------------------------------------------
+## 14. Run Flake8
+
+The workflow runs:
+
+    flake8 phase-3/app phase-3/test_main.py --max-line-length=100
+
+
+This checks our Python code for linting/style problems.
+
+
+If Flake8 fails:
+
+    lint-and-test
+          |
+          X
+        FAIL
+
+
+The next job will not run.
+
+
+------------------------------------------------------------
+## 15. Run pytest
+
+The workflow runs:
+
+    pytest -v phase-3/test_main.py
+
+
+This executes the automated tests we created in Phase 3.
+
+
+Expected result:
+
+    3 passed
+
+
+If the tests pass:
+
+    pytest
+      |
+      v
+    SUCCESS
+
+
+If the tests fail:
+
+    pytest
+      |
+      X
+    FAIL
+
+
+The Docker image will not be pushed.
+
+
+------------------------------------------------------------
+## 16. Docker Hub Login
+
+The second job contains:
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+This logs GitHub Actions into Docker Hub.
+
+
+The credentials come from:
+
+    GitHub Secrets
+
+
+We are NOT writing the actual username or token in the workflow.
+
+
+The flow is:
+
+    GitHub Secrets
+          ↓
+    docker/login-action
+          ↓
+    Docker Hub authentication
+
+
+------------------------------------------------------------
+## 17. Set Up Docker Buildx
+
+The workflow contains:
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+
+Buildx is Docker's modern build system.
+
+We use it here so GitHub Actions can perform the Docker image build using the Docker build-push action.
+
+
+------------------------------------------------------------
+## 18. Build and Push the Docker Image
+
+The workflow contains:
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: ./phase-3
+        file: ./phase-3/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/containerized-fastapi-cicd:latest
+
+
+This is the most important new part of Phase 4.
+
+
+------------------------------------------------------------
+## 19. Understand `context`
+
+We have:
+
+    context: ./phase-3
+
+
+This tells Docker that:
+
+    phase-3/
+
+is the Docker build context.
+
+
+This is the same concept as when we previously ran:
+
+    cd phase-3
+
+    docker build -t docker-mastery:phase3 .
+
+
+The Dockerfile is:
+
+    ./phase-3/Dockerfile
+
+
+Therefore:
+
+    context: ./phase-3
+    file: ./phase-3/Dockerfile
+
+
+means:
+
+    phase-3/
+        |
+        +--> Docker build context
+        |
+        +--> Dockerfile
+        |
+        +--> app/
+        |
+        +--> requirements.txt
+
+
+------------------------------------------------------------
+## 20. Understand `push: true`
+
+In Phase 3 we used:
+
+    push: false
+
+
+This meant:
+
+    Docker build
+         ↓
+    Docker image created
+         ↓
+    Image stays on GitHub Actions runner
+
+
+In Phase 4 we use:
+
+    push: true
+
+
+Now:
+
+    Docker build
+         ↓
+    Docker image
+         ↓
+    Push to Docker Hub
+
+
+This is the main difference between the Phase-3 and Phase-4 Docker workflow.
+
+
+------------------------------------------------------------
+## 21. Understand the Docker Image Tag
+
+We use:
+
+    tags: ${{ secrets.DOCKERHUB_USERNAME }}/containerized-fastapi-cicd:latest
+
+
+Suppose the Docker Hub username is:
+
+    swayam123
+
+
+Then the resulting image name becomes:
+
+    swayam123/containerized-fastapi-cicd:latest
+
+
+The format is:
+
+    USERNAME/REPOSITORY:TAG
+
+
+So:
+
+    swayam123
+        |
+        +--> Docker Hub username
+
+    containerized-fastapi-cicd
+        |
+        +--> Docker Hub repository
+
+    latest
+        |
+        +--> Image tag
+
+
+------------------------------------------------------------
+## 22. Why `latest`?
+
+`latest` is a Docker image tag.
+
+Our image is therefore:
+
+    containerized-fastapi-cicd:latest
+
+
+Whenever this workflow successfully pushes a new image, the `latest` tag will point to the newly pushed image.
+
+
+Later, when we start deploying to AWS and Kubernetes, we will learn better image versioning strategies such as:
+
+    version tags
+    Git commit SHA
+    release tags
+
+
+For now, `latest` keeps the Phase-4 workflow simple.
+
+
+------------------------------------------------------------
+## 23. Check the Workflow Before Committing
+
+From:
+
+    docker-project
+
+
+Run:
+
+    git status
+
+
+The new workflow should appear.
+
+
+Then inspect it:
+
+    Get-Content .github\workflows\phase4-ci-cd.yml
+
+
+Make sure the file contains:
+
+    ${{ secrets.DOCKERHUB_USERNAME }}
+
+and:
+
+    ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+There should NOT be an actual Docker Hub token in this file.
+
+
+------------------------------------------------------------
+## 24. Commit Phase 4
+
+### Location
+
+    docker-project
+
+
+Stage the workflow:
+
+    git add .github/workflows/phase4-ci-cd.yml
+
+
+Check:
+
+    git status
+
+
+Commit:
+
+    git commit -m "Add Phase 4 Docker Hub CI/CD"
+
+
+Push:
+
+    git push
+
+
+------------------------------------------------------------
+## 25. Check GitHub Actions
+
+Open the GitHub repository.
+
+Go to:
+
+    Actions
+
+
+You should see:
+
+    Phase 4 - CI/CD to Docker Hub
+
+
+Open the workflow run.
+
+
+The expected flow is:
+
+    lint-and-test
+          |
+          +--> Checkout
+          +--> Python 3.12
+          +--> Install dependencies
+          +--> Flake8
+          +--> pytest
+          |
+          | SUCCESS
+          v
+    build-and-push
+          |
+          +--> Docker Login
+          +--> Docker Buildx
+          +--> Docker Build
+          +--> Docker Push
+          |
+          v
+        PASS
+
+
+A successful workflow should show a green check mark.
+
+
+------------------------------------------------------------
+## 26. Check Docker Hub
+
+After GitHub Actions finishes successfully, open Docker Hub.
+
+Open:
+
+    containerized-fastapi-cicd
+
+
+You should see an image/tag:
+
+    latest
+
+
+The important point is that we did not manually build and push this image.
+
+GitHub Actions did it automatically.
+
+
+The flow was:
+
+    git push
+        ↓
+    GitHub Actions
+        ↓
+    Tests
+        ↓
+    Docker build
+        ↓
+    Docker Hub
+        ↓
+    latest
+
+
+------------------------------------------------------------
+## 27. Pull the Image from Docker Hub
+
+Now we verify that the image can actually be downloaded and used.
+
+
+Make sure Docker Desktop is running.
+
+
+From PowerShell:
+
+    docker pull YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+
+
+For example:
+
+    docker pull swayam123/containerized-fastapi-cicd:latest
+
+
+Docker should download the image.
+
+
+Check the local images:
+
+    docker images
+
+
+You should see something similar to:
+
+    YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd
+    latest
+
+
+### What are we proving?
+
+We are proving that the image produced by GitHub Actions is actually available from Docker Hub and can be consumed independently.
+
+
+------------------------------------------------------------
+## 28. Run the Docker Hub Image
+
+Run:
+
+    docker run -d --name phase4-app -p 8000:8000 YOUR_DOCKERHUB_USERNAME/containerized-fastapi-cicd:latest
+
+
+For example:
+
+    docker run -d --name phase4-app -p 8000:8000 swayam123/containerized-fastapi-cicd:latest
+
+
+Check:
+
+    docker ps
+
+
+You should see:
+
+    phase4-app
+
+
+with:
+
+    0.0.0.0:8000->8000/tcp
+
+
+------------------------------------------------------------
+## 29. Check the Container Logs
+
+Run:
+
+    docker logs phase4-app
+
+
+The container should show Uvicorn starting the FastAPI application.
+
+
+The application should be listening on:
+
+    0.0.0.0:8000
+
+
+------------------------------------------------------------
+## 30. Test the Application
+
+Open:
+
+    http://localhost:8000
+
+
+Also test:
+
+    http://localhost:8000/health
+
+
+and:
+
+    http://localhost:8000/info
+
+
+You can also open:
+
+    http://localhost:8000/docs
+
+
+### What are we proving?
+
+The application we are running came from the Docker image stored in Docker Hub.
+
+The complete flow is:
+
+    Source Code
+         ↓
+    GitHub
+         ↓
+    GitHub Actions
+         ↓
+    Docker Image
+         ↓
+    Docker Hub
+         ↓
+    docker pull
+         ↓
+    Docker Container
+         ↓
+    FastAPI Application
+
+
+------------------------------------------------------------
+## 31. Check Container Health
+
+Run:
+
+    docker ps
+
+
+Because we are using the Phase-3 Dockerfile, the container should eventually show:
+
+    Up ... (healthy)
+
+
+The health check from Phase 3 is still being used.
+
+The Phase-4 change is not a new health check.
+
+Phase 4 is taking the already hardened Phase-3 image and automating its delivery to Docker Hub.
+
+
+------------------------------------------------------------
+## 32. Stop the Phase-4 Container
+
+When testing is complete:
+
+    docker stop phase4-app
+
+
+Check:
+
+    docker ps
+
+
+The container will no longer be running.
+
+
+The stopped container still exists.
+
+Check:
+
+    docker ps -a
+
+
+Remove it:
+
+    docker rm phase4-app
+
+
+------------------------------------------------------------
+## 33. Phase-4 Complete Flow
+
+The final Phase-4 flow is:
+
+    Developer
+        |
+        | git push
+        v
+    GitHub
+        |
+        v
+    GitHub Actions
+        |
+        +--> lint-and-test
+        |       |
+        |       +--> Flake8
+        |       |
+        |       +--> pytest
+        |
+        | SUCCESS
+        v
+    build-and-push
+        |
+        +--> Docker Login
+        |
+        +--> Docker Buildx
+        |
+        +--> Docker Build
+        |
+        +--> Docker Push
+        |
+        v
+    Docker Hub
+        |
+        | docker pull
+        v
+    Docker Container
+        |
+        v
+    FastAPI Application
+
+
+------------------------------------------------------------
+## 34. What Changed From Phase 3?
+
+Feature          | Phase 3                  | Phase 4
+-----------------|--------------------------|----------------------------
+Testing          | pytest                   | pytest
+Linting          | Flake8                   | Flake8
+Docker Build     | Yes                      | Yes
+Docker Push      | No                       | Yes
+Docker Registry  | None                     | Docker Hub
+Authentication   | None                     | GitHub Secrets
+Buildx           | Yes                      | Yes
+CI               | Yes                      | Yes
+Image Delivery   | No                       | Automated
+
+
+Phase 3:
+
+    GitHub Actions
+        |
+        +--> Test
+        +--> Lint
+        +--> Build
+
+
+Phase 4:
+
+    GitHub Actions
+        |
+        +--> Test
+        +--> Lint
+        +--> Build
+        +--> Push to Docker Hub
+
+
+------------------------------------------------------------
+## 35. Phase-4 Completion Checklist
+
+[ ] Docker Hub account created
+
+[ ] Docker Hub repository created
+
+[ ] Repository named `containerized-fastapi-cicd`
+
+[ ] Docker Hub Access Token created
+
+[ ] `DOCKERHUB_USERNAME` added to GitHub Secrets
+
+[ ] `DOCKERHUB_TOKEN` added to GitHub Secrets
+
+[ ] `.github\workflows\phase4-ci-cd.yml` created
+
+[ ] Workflow committed
+
+[ ] Workflow pushed to GitHub
+
+[ ] GitHub Actions workflow runs successfully
+
+[ ] Flake8 passes
+
+[ ] pytest passes
+
+[ ] Docker image builds successfully
+
+[ ] Docker image is pushed to Docker Hub
+
+[ ] `latest` tag appears in Docker Hub
+
+[ ] Image can be pulled using `docker pull`
+
+[ ] Image can be run using `docker run`
+
+[ ] FastAPI endpoints work
+
+[ ] Container shows healthy
+
+[ ] Phase-4 container can be stopped and removed
+
+
+------------------------------------------------------------
+# Phase 4 Complete
+
+At the end of Phase 4, our project has moved from simply building Docker images to automatically publishing them.
+
+    Phase 1
+        ↓
+    Basic FastAPI + Docker
+
+        ↓
+
+    Phase 2
+        ↓
+    Testing + Flake8 + Multi-stage Docker + CI
+
+        ↓
+
+    Phase 3
+        ↓
+    Alpine + Non-root User + HEALTHCHECK + CI
+
+        ↓
+
+    Phase 4
+        ↓
+    GitHub Actions + Docker Hub
+        ↓
+    Automated Docker Image Delivery
+
+
+Next:
+
+# Phase 5 — AWS EC2
+
+The next phase will take the Docker image from Docker Hub and deploy it to an AWS EC2 instance.
+
+The architecture will become:
+
+    GitHub
+        ↓
+    GitHub Actions
+        ↓
+    Docker Hub
+        ↓
+    AWS EC2
+        ↓
+    Docker Container
+        ↓
+    FastAPI Application
 
 # License
 
