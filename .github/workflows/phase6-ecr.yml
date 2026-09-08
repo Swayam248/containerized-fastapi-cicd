@@ -70,3 +70,9 @@ jobs:
           file: ./phase-3/Dockerfile
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/containerized-fastapi-cicd:latest
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster containerized-fastapi-cluster \
+            --service containerized-fastapi-task-service-5288p4im \
+            --force-new-deployment
